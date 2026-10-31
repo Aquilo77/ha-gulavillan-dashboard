@@ -17,8 +17,8 @@ def _entry(port: int, pin: str = "") -> MockConfigEntry:
     )
 
 
-async def test_page_and_design_roundtrip(hass: HomeAssistant, socket_enabled: None) -> None:
-    """The page is served on the chosen port and a drawing can be saved."""
+async def test_page_is_the_shipped_drawing(hass: HomeAssistant, socket_enabled: None) -> None:
+    """The port serves the drawing from the integration, and it cannot be edited."""
     entry = _entry(18770)
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
@@ -28,16 +28,15 @@ async def test_page_and_design_roundtrip(hass: HomeAssistant, socket_enabled: No
         async with session.get("http://127.0.0.1:18770/") as response:
             html = await response.text()
             assert response.status == 200
-            assert "Gulavillan" in html
+            assert "Redigera" not in html
         async with session.get("http://127.0.0.1:18770/api/design") as response:
             body = await response.json()
-            assert "<svg" in body["svg"]
-        svg = '<svg viewBox="0 0 10 10"><text data-entity="sensor.ute" data-widget="value">–</text><script>no</script></svg>'
-        async with session.post("http://127.0.0.1:18770/api/design", json={"svg": svg}) as response:
-            saved = await response.json()
-            assert response.status == 200
-            assert "script" not in saved["svg"].lower()
-            assert "sensor.ute" in saved["svg"]
+            assert "sensor.temperatur_ute" in body["svg"]
+            assert "data-widget=\"sparkline\"" in body["svg"]
+        async with session.post("http://127.0.0.1:18770/api/design", json={"svg": "<svg></svg>"}) as response:
+            assert response.status == 405
+        async with session.get("http://127.0.0.1:18770/edit") as response:
+            assert response.status == 404
 
     await hass.config_entries.async_unload(entry.entry_id)
 

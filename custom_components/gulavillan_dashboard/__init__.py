@@ -9,9 +9,8 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DATA_SERVER, DOMAIN
+from .const import DATA_SERVER
 from .server import PageServer
-from .storage import DesignStorage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,14 +21,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Load the drawing and start the page server."""
-    storage = hass.data.get(f"{DOMAIN}_storage")
-    if not isinstance(storage, DesignStorage):
-        storage = DesignStorage(hass)
-        await storage.async_load()
-        hass.data[f"{DOMAIN}_storage"] = storage
-
-    server = PageServer(hass, entry, storage)
+    """Start the page server."""
+    server = PageServer(hass, entry)
     started = await server.start()
     hass.data.setdefault(DATA_SERVER, {})[entry.entry_id] = server
     if not started:

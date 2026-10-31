@@ -1,6 +1,6 @@
 # Gulavillan
 
-En sida på en egen port i Home Assistant. Du ritar den som SVG, gärna med hjälp av en AI, och kopplar former, värden och grafer till dina entiteter. Porten väljs och byts inifrån Home Assistant.
+En sida på en egen port i Home Assistant. Ritningen ligger i det här repot, som en SVG med värden och grafer kopplade till entiteter. Porten väljs och byts inifrån Home Assistant. Sidan kan inte redigeras i webbläsaren.
 
 ## Installation
 
@@ -14,7 +14,7 @@ Kräver Home Assistant Core 2026.10 eller nyare, och [HACS](https://hacs.xyz/).
 6. Gå till **Inställningar → Enheter och tjänster → Lägg till integration** och välj **Gulavillan**.
 7. Välj port (förval **8350**) och, om du vill, en pinkod.
 
-Sidan finns sedan på `http://<din-home-assistant>:8350/`. Redigering finns på `/edit`.
+Sidan finns sedan på `http://<din-home-assistant>:8350/`.
 
 ## Byta port
 
@@ -22,33 +22,26 @@ Sidan finns sedan på `http://<din-home-assistant>:8350/`. Redigering finns på 
 
 Välj inte Home Assistants egen port (oftast 8123).
 
-## Rita sidan med AI
+## Sidan
 
-1. Öppna `/edit` på Gulavillans port.
-2. Tryck på **Kopiera AI-instruktion**. Texten innehåller reglerna och dina entiteter.
-3. Klistra in den i din AI och be den rita en SVG.
-4. Klistra in SVG:n i rutan, förhandsvisa och spara.
+Ritningen är `custom_components/gulavillan_dashboard/www/page.svg`. Den ändras här i repot, inte på sidan.
 
-Kopplingarna sitter i SVG-attribut:
+Den första sidan visar klocka, utetemperatur med graf, inomhustemperatur, luftfuktighet, ett hus där fönstren tänds med lampor, och ytterdörrens läge. Den förväntar sig de här entiteterna:
 
-| Attribut | Betydelse |
+| Entitet | Visas som |
 | --- | --- |
-| `data-entity="sensor.exempel"` | Vilken entitet formen hör till |
-| `data-widget="value"` | Tillståndet, med `data-decimals` om det är ett tal |
-| `data-widget="label"` | På, Av, Öppen och liknande |
-| `data-widget="name"` / `unit` | Namn och enhet |
-| `data-widget="clock"` / `date` | Klocka och datum |
-| `data-widget="sparkline"` `data-hours="24"` | Graf på en `rect` |
-| `data-widget="state-fill"` `data-on` `data-off` | Färg när entiteten är på eller av |
-| `data-widget="bar"` `data-min` `data-max` | En `rect` vars bredd fylls av värdet |
+| `sensor.temperatur_ute` | Ute, med graf för senaste dygnet |
+| `climate.vardagsrum` | Inomhustemperatur och läge |
+| `sensor.luftfuktighet` | Luftfuktighet |
+| `light.vardagsrum`, `light.kok`, `light.hall` | Fönster och lampa på huset |
+| `binary_sensor.ytterdorr` | Dörr |
 
-Skript, externa bilder och klick-hanterare tas bort när sidan sparas. Värdena kommer från Home Assistant via integrationens egen anslutning. Webbläsaren får ingen HA-token.
+Saknas en entitet visas ett streck. Säg till vilka riktiga entity_id som ska användas, så byts de i SVG-filen.
 
-En pinkod som sätts i integrationen gäller både visning och redigering. Lämna den tom bara om porten inte ska nås från nätverk du inte litar på.
+Värdena kommer från Home Assistant via integrationens egen anslutning. Webbläsaren får ingen HA-token. En pinkod som sätts i integrationen gäller för att öppna sidan.
 
 ## Begränsningar
 
-- En sida per installation.
+- En sida, den som ligger i repot.
 - Grafer behöver att historik (Recorder) är påslagen.
-- Porten måste vara nåbar på maskinen. Home Assistant öppnar den inte automatiskt i alla nätverksinställningar.
-- Sidan är SVG som du (eller en AI) skriver. Den är inte Lovelace-redigeraren.
+- Porten måste vara nåbar på maskinen.

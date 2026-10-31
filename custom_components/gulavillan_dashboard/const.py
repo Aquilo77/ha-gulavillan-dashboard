@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 DOMAIN = "gulavillan_dashboard"
-STORAGE_KEY = f"{DOMAIN}.design"
-STORAGE_VERSION = 1
 DEFAULT_PORT = 8350
 MIN_PORT = 1024
 MAX_PORT = 65535

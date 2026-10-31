@@ -16,11 +16,10 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.util import dt as dt_util
 
 from .const import COOKIE, DEFAULT_PORT, DOMAIN, ISSUE_PORT
-from .storage import DesignStorage
-from .svg import SvgError, entity_ids
 
 _LOGGER = logging.getLogger(__name__)
 _PAGE = Path(__file__).parent / "www" / "app.html"
+_SVG = Path(__file__).parent / "www" / "page.svg"
 _PUBLIC_ATTRIBUTES = (
     "friendly_name",
     "unit_of_measurement",
@@ -59,11 +58,10 @@ def _public_state(state: State) -> dict[str, Any]:
 class PageServer:
     """Serve the page and push Home Assistant state to it."""
 
-    def __init__(self, hass: HomeAssistant, entry: Any, storage: DesignStorage) -> None:
+    def __init__(self, hass: HomeAssistant, entry: Any) -> None:
         """Initialize the server."""
         self.hass = hass
         self.entry = entry
-        self.storage = storage
         self.clients: set[web.WebSocketResponse] = set()
         self._runner: web.AppRunner | None = None
         self._unsub: Any = None
@@ -97,12 +95,9 @@ class PageServer:
         app = web.Application()
         app["page"] = self
         app.router.add_get("/", self._page)
-        app.router.add_get("/edit", self._page)
         app.router.add_get("/api/session", self._session)
         app.router.add_post("/api/login", self._login)
         app.router.add_get("/api/design", self._get_design)
-        app.router.add_post("/api/design", self._save_design)
-        app.router.add_get("/api/entities", self._entities)
         app.router.add_get("/api/history", self._history)
         app.router.add_get("/api/live", self._live)
 
@@ -216,37 +211,7 @@ class PageServer:
     async def _get_design(self, request: web.Request) -> web.Response:
         if not self.authorized(request):
             return self._deny()
-        return web.json_response({"svg": self.storage.svg})
-
-    async def _save_design(self, request: web.Request) -> web.Response:
-        if not self.authorized(request):
-            return self._deny()
-        try:
-            body = await request.json()
-        except ValueError:
-            return web.json_response({"error": "invalid"}, status=400)
-        try:
-            svg = await self.storage.async_save(str(body.get("svg") or ""))
-        except SvgError as err:
-            return web.json_response({"error": str(err)}, status=400)
-        return web.json_response({"svg": svg})
-
-    async def _entities(self, request: web.Request) -> web.Response:
-        if not self.authorized(request):
-            return self._deny()
-        entities = []
-        for state in self.hass.states.async_all():
-            public = _public_state(state)
-            entities.append(
-                {
-                    "entity_id": state.entity_id,
-                    "name": public["attributes"].get("friendly_name") or state.entity_id,
-                    "state": public["state"],
-                    "unit": public["attributes"].get("unit_of_measurement") or "",
-                }
-            )
-        entities.sort(key=lambda item: item["entity_id"])
-        return web.json_response({"entities": entities})
+        return web.json_response({"svg": _SVG.read_text(encoding="utf-8")})
 
     async def _history(self, request: web.Request) -> web.Response:
         if not self.authorized(request):
@@ -314,7 +279,3 @@ async def _async_history(hass: HomeAssistant, entity_id: str, hours: int) -> lis
         _LOGGER.debug("History for %s is not available", entity_id)
         return []
 
-
-def sparkline_entities(svg: str) -> list[str]:
-    """Entity ids mentioned in the drawing. Kept for callers that scan the page."""
-    return entity_ids(svg)

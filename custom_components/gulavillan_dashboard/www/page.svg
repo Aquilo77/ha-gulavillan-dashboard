@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#182230"/>
+      <stop offset="1" stop-color="#10151c"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0c56a"/>
+      <stop offset="1" stop-color="#c4923a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <circle cx="1560" cy="180" r="70" fill="#e0b15a" opacity="0.9"/>
+  <circle cx="1605" cy="165" r="58" fill="#182230"/>
+  <text x="96" y="118" fill="#e0b15a" font-size="26" font-family="system-ui, sans-serif" letter-spacing="6">GULAVILLAN</text>
+  <text x="96" y="250" fill="#f6f1e7" font-size="128" font-family="system-ui, sans-serif" data-widget="clock">--:--</text>
+  <text x="100" y="312" fill="#b7ad9f" font-size="32" font-family="system-ui, sans-serif" data-widget="date"></text>
+  <text x="96" y="430" fill="#b7ad9f" font-size="22" font-family="system-ui, sans-serif">UTE</text>
+  <text x="96" y="530" fill="#f6f1e7" font-size="88" font-family="system-ui, sans-serif" data-entity="sensor.temperatur_ute" data-widget="value" data-decimals="1">-</text>
+  <text x="330" y="530" fill="#b7ad9f" font-size="36" font-family="system-ui, sans-serif" data-entity="sensor.temperatur_ute" data-widget="unit">&#176;C</text>
+  <rect x="96" y="560" width="460" height="120" rx="16" fill="#1b2430" data-entity="sensor.temperatur_ute" data-widget="sparkline" data-hours="24"/>
+  <text x="640" y="430" fill="#b7ad9f" font-size="22" font-family="system-ui, sans-serif">INOMHUS</text>
+  <text x="640" y="530" fill="#f6f1e7" font-size="88" font-family="system-ui, sans-serif" data-entity="climate.vardagsrum" data-attribute="current_temperature" data-widget="value" data-decimals="1">-</text>
+  <text x="860" y="530" fill="#b7ad9f" font-size="36" font-family="system-ui, sans-serif">&#176;C</text>
+  <text x="640" y="590" fill="#8d8478" font-size="24" font-family="system-ui, sans-serif" data-entity="climate.vardagsrum" data-widget="label">-</text>
+  <text x="1080" y="430" fill="#b7ad9f" font-size="22" font-family="system-ui, sans-serif">LUFTFUKTIGHET</text>
+  <text x="1080" y="530" fill="#f6f1e7" font-size="88" font-family="system-ui, sans-serif" data-entity="sensor.luftfuktighet" data-widget="value" data-decimals="0">-</text>
+  <text x="1260" y="530" fill="#b7ad9f" font-size="36" font-family="system-ui, sans-serif" data-entity="sensor.luftfuktighet" data-widget="unit">%</text>
+  <rect x="1080" y="580" width="280" height="18" rx="9" fill="#1b2430"/>
+  <rect x="1080" y="580" width="280" height="18" rx="9" fill="#e0b15a" data-entity="sensor.luftfuktighet" data-widget="bar" data-min="0" data-max="100"/>
+  <g transform="translate(1180, 680)">
+    <polygon points="40,150 370,150 205,20" fill="url(#roof)"/>
+    <rect x="70" y="150" width="270" height="170" rx="4" fill="#d9c7a4"/>
+    <rect x="175" y="210" width="58" height="110" fill="#1b2430"/>
+    <rect x="100" y="190" width="52" height="40" fill="#334155" data-entity="light.vardagsrum" data-widget="state-fill" data-on="#f6e7b8" data-off="#334155"/>
+    <rect x="258" y="190" width="52" height="40" fill="#334155" data-entity="light.kok" data-widget="state-fill" data-on="#f6e7b8" data-off="#334155"/>
+    <circle cx="300" cy="300" r="10" fill="#334155" data-entity="light.hall" data-widget="state-fill" data-on="#e0b15a" data-off="#334155"/>
+  </g>
+  <text x="1260" y="1020" fill="#b7ad9f" font-size="22" font-family="system-ui, sans-serif">D&#214;RR</text>
+  <text x="1360" y="1020" fill="#f6f1e7" font-size="22" font-family="system-ui, sans-serif" data-entity="binary_sensor.ytterdorr" data-widget="label">-</text>
+</svg>
