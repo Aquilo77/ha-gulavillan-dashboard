@@ -288,7 +288,10 @@
           if (el.dataset.slot === "indoor") return states[slots.climate]?.attributes?.friendly_name || "";
           return "";
         }
-        if (widget === "unit") return state?.attributes?.unit_of_measurement || el.textContent || "";
+        if (widget === "unit") {
+          const unit = (state?.attributes?.unit_of_measurement || el.textContent || "").trim();
+          return unit ? " " + unit : "";
+        }
         const raw = rawValue(state, el);
         if (raw == null) return widget === "label" ? "" : "–";
         if (widget === "label") return LABELS[String(raw)] || String(raw);
