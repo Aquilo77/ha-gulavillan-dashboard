@@ -1,6 +1,8 @@
 # Gulavillan
 
-En sida på en egen port i Home Assistant. Hem är en SVG-villa. Övriga flikar byggs av det som finns i Home Assistant just nu: områden, våningar och enhetstyper. Inga entity_id, rum eller personnamn ligger i repot. Porten väljs och byts inifrån Home Assistant. Sidan kan inte redigeras i webbläsaren.
+En sida i Home Assistants sidomeny. Hem är en isometrisk gul villa. Övriga flikar byggs av våningar, områden och enhetstyper i ditt Home Assistant. Inga entity_id, rum eller personnamn ligger i repot.
+
+Du loggar in med ditt vanliga Home Assistant-konto. En egen port och en pinkod för hela sidan behövs inte längre.
 
 ## Installation
 
@@ -9,18 +11,34 @@ Kräver Home Assistant Core 2026.10 eller nyare, och [HACS](https://hacs.xyz/).
 1. Öppna **HACS → Integrationer**.
 2. Öppna menyn uppe till höger och välj **Anpassade arkiv**.
 3. Klistra in `https://github.com/Aquilo77/ha-gulavillan-dashboard` och välj kategori **Integration**.
-4. Sök upp **Gulavillan** och tryck på **Ladda ner**. Starta inte om innan nedladdningen är klar. HACS tar bort arkiv som inte har laddats ner.
-5. Starta om Home Assistant.
+4. Sök upp **Gulavillan** och tryck på **Ladda ner**. Starta inte om innan nedladdningen är klar.
+5. Starta om Home Assistant en gång, så att integrationen kommer in.
 6. Gå till **Inställningar → Enheter och tjänster → Lägg till integration** och välj **Gulavillan**.
-7. Välj port (förval **8350**) och, om du vill, en pinkod.
+7. En pinkod är valfri. Den används bara när larmet ska ändras från sidan.
 
-Sidan finns sedan på `http://<din-home-assistant>:8350/`.
+Gulavillan syns sedan i sidomenyn. Första gången kopieras sidan till `/config/www/gulavillan/` och Home Assistant visar den som `/local/gulavillan/`.
 
-## Byta port och välja entiteter
+## Uppdatera utseendet utan omstart
 
-Öppna integrationen **Gulavillan** och välj **Konfigurera**. Där byter du port och pinkod. Där kan du också peka ut villans sensorer, vilka lampor som sitter i fönstren, och vilka strömbrytare som ska räknas som lampor. Tomma fält betyder att sidan väljer själv. Sidan flyttar port direkt, utan att hela Home Assistant startas om.
+När en ny version av sidan finns på GitHub:
 
-Välj inte Home Assistants egen port (oftast 8123).
+1. Öppna **Utvecklarverktyg → Åtgärder**.
+2. Kör **gulavillan_dashboard.update_frontend**.
+3. Lämna fältet tomt för senaste releasen, eller skriv en gren eller tagg.
+4. Ladda om sidan i webbläsaren. En väggplatta som redan visar sidan laddar om sig själv när versionen ändras.
+
+Det behövs ingen omstart av Home Assistant, och inte en ny nedladdning i HACS, för att byta villan, färger eller flikar. HACS-nedladdning och omstart behövs bara när Python-koden i integrationen ändras.
+
+**gulavillan_dashboard.rollback_frontend** lägger tillbaka den förra sidkopian. Bara administratörer kan köra de här åtgärderna.
+
+## Väggplatta
+
+1. Skapa en vanlig användare i Home Assistant, inte en administratör, om plattan bara ska visa huset.
+2. Öppna Home Assistant i webbläsaren eller i Companion-appen och logga in som den användaren.
+3. Öppna **Gulavillan** i sidomenyn.
+4. I Companion-appen kan du sätta den vyn som startskärm och slå på kioskläge, så att menyraden döljs.
+
+Under **Konfigurera** kan sidan begränsas till administratörer, och namn och ikon i sidomenyn kan bytas.
 
 ## Flikar
 
@@ -30,9 +48,9 @@ En flik visas bara om det finns något att visa.
 | --- | --- |
 | Hem | Isometrisk gul villa. Klocka, ute med graf, inne, luftfuktighet och elpris svävar runt huset. Fönstren tänds av lamporna och går att klicka. Dörren följer dörrsensorn. Status och närvaro ligger längs nederkanten. |
 | Belysning | Lampor per våning och område, med tänd/släck, ljusstyrka och släck allt. Strömbrytare kommer med bara om du valt dem. |
-| Klimat | Klimat, temperatur, luftfuktighet och ljusstyrka per område, plus ute och väder. |
+| Klimat | Klimat, temperatur, luftfuktighet och ljus per område, plus ute och väder. |
 | Närvaro | Personer, enhetsspårare, rörelse och när den senast ändrades. |
-| Säkerhet | Larm, dörrar, fönster, lås, rök, läckage och kamerabilder. Öppet och otillgängligt markeras. Larmet kräver sidans pinkod en gång till. |
+| Säkerhet | Larm, dörrar, fönster, lås, rök, läckage och kamerabilder. Öppet markeras. Larmet kräver pinkoden en gång till om du har satt en. |
 | Energi | Effekt nu, energi idag, elpris med dagens kurva, och laddbox om en sådan integration finns. |
 | Media | Spelare som är igång, med spel/paus och volym. |
 | System | Batterier under 20 %, väntande uppdateringar och antalet otillgängliga entiteter. |
@@ -40,16 +58,16 @@ En flik visas bara om det finns något att visa.
 
 Entiteter utan område hamnar under **Övrigt**. Avstängda, dolda och diagnostik-entiteter visas inte.
 
-Villan gissar utifrån område och enhetstyp: en temperatursensor vars namn låter som ute, annars vädrets temperatur; innetemperatur från ett områdes temperatursensor; luftfuktighet och dörr på samma sätt. Lampor i ett område används till fönstren. Det du väljer under Konfigurera vinner.
+Villan gissar utifrån område och enhetstyp. Det du väljer under **Konfigurera** vinner: utetemperatursensor, innetemperatur, luftfuktighet, klimat, dörr, lampor på huset, och vilka strömbrytare som ska räknas som lampor.
 
-Färger, typsnitt, rundningar, skuggor och avstånd ligger i `custom_components/gulavillan_dashboard/www/theme.css`.
+Färger, typsnitt, rundningar, skuggor och avstånd ligger i `www/theme.css` i sidfilerna.
 
-Värdena kommer från Home Assistant via integrationens egen anslutning. Webbläsaren får ingen HA-token. En pinkod som sätts i integrationen gäller för att öppna sidan.
+## Egen port
+
+Den egna porten är av som standard. Den kan slås på under **Konfigurera** om en gammal kiosk måste nå sidan utanför Home Assistant. Använd inte Home Assistants egen port. Den här vägen tas bort senare.
 
 ## Begränsningar
 
-- Ritningen av huset ändras i repot, inte på sidan.
 - Grafer behöver att historik (Recorder) är påslagen.
 - Energi idag blir rätt om sensorn redan visar dagens förbrukning, till exempel en utility meter, eller om du väljer den under Konfigurera.
-- Kamerabilder visas när kameran kan lämna en stillbild.
-- Porten måste vara nåbar på maskinen.
+- Kamerabilder visas när kameran kan lämna en stillbild och användaren får läsa den.

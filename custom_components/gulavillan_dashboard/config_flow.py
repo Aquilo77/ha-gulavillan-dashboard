@@ -11,7 +11,9 @@ from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     EntitySelector,
+    IconSelector,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -36,9 +38,15 @@ from .const import (
     OPT_VILLA_HUMIDITY,
     OPT_VILLA_INDOOR,
     OPT_VILLA_LIGHTS,
+    OPT_LEGACY,
+    OPT_PANEL_ADMIN,
+    OPT_SIDEBAR_ICON,
+    OPT_SIDEBAR_TITLE,
     OPT_VILLA_OUTDOOR,
     SINGLE_OPTIONS,
 )
+
+_BOOL_OPTIONS = (OPT_PANEL_ADMIN, OPT_LEGACY)
 
 _PORT = NumberSelector(
     NumberSelectorConfig(
@@ -49,6 +57,9 @@ _PORT = NumberSelector(
     )
 )
 _PIN = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
+_TEXT = TextSelector()
+_BOOL = BooleanSelector()
+_ICON = IconSelector()
 
 
 def _ha_port(hass: Any) -> int | None:
@@ -124,11 +135,20 @@ def _options_schema(port: int, pin: str, current: dict[str, Any]) -> vol.Schema:
             {"domain": ["sensor", "binary_sensor", "switch", "number"], "multiple": True}
         ),
     }
+    plain = {
+        OPT_SIDEBAR_TITLE: _TEXT,
+        OPT_SIDEBAR_ICON: _ICON,
+        OPT_PANEL_ADMIN: _BOOL,
+        OPT_LEGACY: _BOOL,
+    }
     for key, selector in singles.items():
         marker, selector = _field(key, selector, current.get(key) or "")
         fields[marker] = selector
     for key, selector in multiples.items():
         marker, selector = _field(key, selector, list(current.get(key) or []))
+        fields[marker] = selector
+    for key, selector in plain.items():
+        marker, selector = _field(key, selector, current.get(key) or "")
         fields[marker] = selector
     return vol.Schema(fields)
 
@@ -164,6 +184,11 @@ def clean_options(
         cleaned = [item.strip() for item in raw if isinstance(item, str) and item.strip()]
         if cleaned:
             data[key] = cleaned
+    for key in _BOOL_OPTIONS:
+        if key in user_input:
+            data[key] = bool(user_input[key])
+        elif key in previous:
+            data[key] = bool(previous[key])
     return data
 
 
@@ -183,24 +208,17 @@ class GulavillanConfigFlow(ConfigFlow, domain=DOMAIN):
         if self._async_current_entries():
             return self.async_abort(reason="single_instance_allowed")
 
-        errors: dict[str, str] = {}
-        port = DEFAULT_PORT
-        pin = ""
         if user_input is not None:
-            port = _as_port(user_input.get("port")) or 0
             pin = str(user_input.get("pin") or "").strip()
-            errors = await self._validate(port, current=None)
-            if not errors:
-                return self.async_create_entry(
-                    title=f"Gulavillan ({port})",
-                    data={"port": port, "pin": pin},
-                )
+            return self.async_create_entry(
+                title="Gulavillan",
+                data={"port": DEFAULT_PORT, "pin": pin},
+            )
 
         return self.async_show_form(
             step_id="user",
-            data_schema=_schema(port or DEFAULT_PORT, pin),
-            errors=errors,
-            description_placeholders={"port": str(port or DEFAULT_PORT)},
+            data_schema=vol.Schema({vol.Optional("pin", default=""): _PIN}),
+            description_placeholders={"port": str(DEFAULT_PORT)},
         )
 
     async def _validate(self, port: int, current: int | None) -> dict[str, str]:
@@ -226,9 +244,11 @@ class GulavillanOptionsFlow(OptionsFlow):
         if user_input is not None:
             port = _as_port(user_input.get("port")) or 0
             pin = str(user_input.get("pin") or "").strip()
-            if port < MIN_PORT or port > MAX_PORT or port == 8123 or port == (_ha_port(self.hass) or -1):
+            legacy = bool(user_input.get(OPT_LEGACY))
+            ha_port = _ha_port(self.hass)
+            if port < MIN_PORT or port > MAX_PORT or port == 8123 or port == ha_port:
                 errors["port"] = "invalid_port"
-            elif port != current and not await async_port_available(port):
+            elif legacy and port != current and not await async_port_available(port):
                 errors["port"] = "port_in_use"
             else:
                 self.hass.config_entries.async_update_entry(

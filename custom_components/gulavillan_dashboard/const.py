@@ -22,6 +22,17 @@ OPT_POWER = "power_sensor"
 OPT_ENERGY = "energy_sensor"
 OPT_PRICE = "price_sensor"
 OPT_CHARGERS = "charger_entities"
+OPT_SIDEBAR_TITLE = "sidebar_title"
+OPT_SIDEBAR_ICON = "sidebar_icon"
+OPT_PANEL_ADMIN = "panel_admin_only"
+OPT_LEGACY = "legacy_server"
+
+PANEL_PATH = "gulavillan"
+PANEL_URL = "/gulavillan_dashboard/panel.js"
+FRONTEND_DIR = "gulavillan"
+REPO = "Aquilo77/ha-gulavillan-dashboard"
+SERVICE_UPDATE = "update_frontend"
+SERVICE_ROLLBACK = "rollback_frontend"
 
 SINGLE_OPTIONS = (
     OPT_VILLA_OUTDOOR,
@@ -32,6 +43,8 @@ SINGLE_OPTIONS = (
     OPT_POWER,
     OPT_ENERGY,
     OPT_PRICE,
+    OPT_SIDEBAR_TITLE,
+    OPT_SIDEBAR_ICON,
 )
 MULTI_OPTIONS = (
     OPT_VILLA_LIGHTS,

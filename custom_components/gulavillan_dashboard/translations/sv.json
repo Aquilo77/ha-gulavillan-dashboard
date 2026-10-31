@@ -10,14 +10,12 @@
     "step": {
       "user": {
         "data": {
-          "pin": "Pinkod (valfri)",
-          "port": "Port"
+          "pin": "Pinkod för larm (valfri)"
         },
         "data_description": {
-          "pin": "Om du fyller i en kod frågar sidan efter den. Lämna tomt i ett nätverk du litar på.",
-          "port": "Sidan visas på den här porten, inte på Home Assistants vanliga port."
+          "pin": "Om du fyller i en kod frågar sidan efter den. Lämna tomt i ett nätverk du litar på."
         },
-        "description": "Visar din SVG-sida på en egen port. Porten kan bytas senare från integrationens sida.",
+        "description": "Lägger till Gulavillan i sidomenyn. Du loggar in med ditt vanliga Home Assistant-konto. En pinkod här frågas bara en gång till när larmet ska ändras.",
         "title": "Gulavillan"
       }
     }
@@ -48,7 +46,11 @@
           "power_sensor": "Effekt just nu",
           "energy_sensor": "Energi idag",
           "price_sensor": "Elpris",
-          "charger_entities": "Laddbox"
+          "charger_entities": "Laddbox",
+          "sidebar_title": "Namn i sidomenyn",
+          "sidebar_icon": "Ikon i sidomenyn",
+          "panel_admin_only": "Bara administratörer",
+          "legacy_server": "Egen port"
         },
         "data_description": {
           "pin": "Om du fyller i en kod frågar sidan efter den. Lämna tomt i ett nätverk du litar på.",
@@ -63,12 +65,32 @@
           "power_sensor": "Hela husets effekt. Tomt så väljer sidan själv.",
           "energy_sensor": "En sensor som redan visar dagens energi, till exempel en utility meter.",
           "price_sensor": "Pris per kWh. Tomt så väljer sidan en sensor med den enheten.",
-          "charger_entities": "Extra entiteter för laddboxen. Kända laddbox-integrationer tas med automatiskt."
+          "charger_entities": "Extra entiteter för laddboxen. Kända laddbox-integrationer tas med automatiskt.",
+          "sidebar_title": "Texten som visas i Home Assistants sidomeny.",
+          "sidebar_icon": "Ikonen bredvid namnet.",
+          "panel_admin_only": "Dölj sidan för användare som inte är administratörer.",
+          "legacy_server": "Visa sidan även på en egen port. Låt den vara av. Den finns bara kvar för en gammal kiosk och tas bort senare."
         },
-        "description": "Sidan ligger på port {port}. Lämna entitetsfälten tomma om sidan ska välja själv utifrån områden och typ.",
+        "description": "Sidan ligger i sidomenyn. Den egna porten är av tills du slår på den här nedanför. Använd inte Home Assistants egen port.",
         "title": "Gulavillan"
       }
     }
   },
-  "title": "Gulavillan"
+  "title": "Gulavillan",
+  "services": {
+    "update_frontend": {
+      "name": "Uppdatera sidan",
+      "description": "Ladda ner Gulavillan-sidan från GitHub till /config/www/gulavillan. Home Assistant behöver inte startas om.",
+      "fields": {
+        "ref": {
+          "name": "Gren eller tagg",
+          "description": "Valfri git-ref. Lämna tom för senaste releasen."
+        }
+      }
+    },
+    "rollback_frontend": {
+      "name": "Återställ föregående sida",
+      "description": "Lägg tillbaka den förra Gulavillan-sidan. Home Assistant behöver inte startas om."
+    }
+  }
 }

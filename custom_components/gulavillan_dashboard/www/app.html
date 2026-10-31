@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gulavillan</title>
-    <link rel="stylesheet" href="/theme.css" />
+    <link rel="stylesheet" href="theme.css" />
     <style>
       * { box-sizing: border-box; }
       html, body { margin: 0; min-height: 100%; background: var(--bg-gradient); color: var(--text); font-family: var(--font); font-weight: var(--weight); }
@@ -76,7 +76,7 @@
     <div id="gate" hidden>
       <form class="card" id="pin-form">
         <h1>Gulavillan</h1>
-        <p class="muted">Sidan är låst med en pinkod som du valt i Home Assistant.</p>
+        <p class="muted" id="gate-text">Sidan är låst med en pinkod som du valt i Home Assistant.</p>
         <input id="pin" type="password" autocomplete="current-password" placeholder="Pinkod" />
         <p class="muted" id="pin-status"></p>
         <button class="primary" type="submit">Öppna</button>
@@ -184,7 +184,41 @@
         return allEntities().find((entity) => entity.entity_id === id) || null;
       }
 
+      function serviceCall(body) {
+        if (body.action === "toggle") return ["homeassistant", "toggle", { entity_id: body.entity_id }];
+        if (body.action === "turn_off") return ["homeassistant", "turn_off", { entity_id: body.entity_ids }];
+        if (body.action === "brightness") {
+          const percent = Number(body.brightness_pct);
+          if (!percent) return ["light", "turn_off", { entity_id: body.entity_id }];
+          return ["light", "turn_on", { entity_id: body.entity_id, brightness_pct: percent }];
+        }
+        if (body.action === "climate_temperature") return ["climate", "set_temperature", { entity_id: body.entity_id, temperature: body.temperature }];
+        if (body.action === "climate_mode") return ["climate", "set_hvac_mode", { entity_id: body.entity_id, hvac_mode: body.hvac_mode }];
+        if (body.action === "media" && body.command === "volume") return ["media_player", "volume_set", { entity_id: body.entity_id, volume_level: body.volume_level }];
+        if (body.action === "media") return ["media_player", "media_play_pause", { entity_id: body.entity_id }];
+        return null;
+      }
+
       async function act(body) {
+        if (mode === "ha" && ha) {
+          try {
+            if (body.action === "alarm") {
+              await ha.send("gulavillan_dashboard/alarm", {
+                entity_id: body.entity_id,
+                mode: body.mode,
+                pin: body.pin || "",
+                code: body.code || "",
+              });
+              return true;
+            }
+            const call = serviceCall(body);
+            if (!call) return false;
+            await ha.send("call_service", { domain: call[0], service: call[1], service_data: call[2] });
+            return true;
+          } catch (err) {
+            return false;
+          }
+        }
         const response = await fetch("/api/action", {
           method: "POST",
           credentials: "same-origin",
@@ -192,6 +226,21 @@
           body: JSON.stringify(body),
         });
         return response.ok;
+      }
+
+      async function historyPoints(entity, hours) {
+        if (mode === "ha" && accessToken) {
+          const start = new Date(Date.now() - hours * 3600000).toISOString();
+          const response = await fetch("/api/history/period/" + start + "?filter_entity_id=" + encodeURIComponent(entity) + "&minimal_response", {
+            headers: { Authorization: "Bearer " + accessToken },
+          });
+          if (!response.ok) return [];
+          const payload = await response.json();
+          const rows = Array.isArray(payload) ? payload.flat() : [];
+          return rows.map((row) => Number(row.state)).filter((value) => Number.isFinite(value));
+        }
+        const response = await fetch("/api/history?entity_id=" + encodeURIComponent(entity) + "&hours=" + hours, { credentials: "same-origin" });
+        return response.ok ? ((await response.json()).points || []) : [];
       }
 
       function syncSlots() {
@@ -280,8 +329,7 @@
         await Promise.all(plots.map(async (el, index) => {
           const entity = entityFor(el);
           if (!entity) return;
-          const response = await fetch("/api/history?entity_id=" + encodeURIComponent(entity) + "&hours=" + Number(el.dataset.hours || 24), { credentials: "same-origin" });
-          const points = response.ok ? ((await response.json()).points || []) : [];
+          const points = await historyPoints(entity, Number(el.dataset.hours || 24));
           const current = Number(rawValue(states[entity], el));
           if (Number.isFinite(current)) points.push(current);
           if (points.length < 2) return;
@@ -313,6 +361,10 @@
       }
 
       let hemRoot = null;
+      let mode = "legacy";
+      let ha = null;
+      let pageVersion = new URLSearchParams(location.search).get("v") || "";
+      let accessToken = "";
 
       function chip(kind, text) {
         const node = h("div", { class: "chip" });
@@ -624,7 +676,10 @@
         for (const [mode, text] of ALARM_MODES) {
           if (mode !== "disarm" && features && (features & ALARM_FEATURES[mode]) === 0) continue;
           const button = h("button", { class: "action", type: "button", text });
-          button.addEventListener("click", () => openAlarm(entity, mode));
+          button.addEventListener("click", () => {
+            if (home.pin_required) openAlarm(entity, mode);
+            else act({ action: "alarm", entity_id: entity.entity_id, mode });
+          });
           row.append(button);
         }
         card.append(row);
@@ -634,7 +689,15 @@
       function cameraCard(entity) {
         const card = h("article", { class: "card" });
         card.append(h("h3", { text: entity.name }));
-        const img = h("img", { class: "shot", alt: "", src: "/api/camera/" + encodeURIComponent(entity.entity_id) });
+        const img = h("img", { class: "shot", alt: "" });
+        if (mode === "ha" && accessToken) {
+          fetch("/api/camera_proxy/" + entity.entity_id, { headers: { Authorization: "Bearer " + accessToken } })
+            .then((response) => response.ok ? response.blob() : Promise.reject())
+            .then((blob) => { img.src = URL.createObjectURL(blob); })
+            .catch(() => img.dispatchEvent(new Event("error")));
+        } else {
+          img.src = "/api/camera/" + encodeURIComponent(entity.entity_id);
+        }
         img.addEventListener("error", () => img.replaceWith(h("p", { class: "muted", text: "Ingen bild" })));
         card.append(img);
         return card;
@@ -672,8 +735,7 @@
 
       async function drawPrice(host, entityId) {
         const hours = Math.max(1, new Date().getHours() + 1);
-        const response = await fetch("/api/history?entity_id=" + encodeURIComponent(entityId) + "&hours=" + hours, { credentials: "same-origin" });
-        const points = response.ok ? ((await response.json()).points || []) : [];
+        const points = await historyPoints(entityId, hours);
         if (points.length < 2) return;
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("viewBox", "0 0 300 80");
@@ -855,18 +917,44 @@
       async function show() {
         gate.hidden = true;
         app.hidden = false;
-        const [homeResponse, designResponse] = await Promise.all([
-          fetch("/api/home", { credentials: "same-origin" }),
-          fetch("/api/design", { credentials: "same-origin" }),
-        ]);
-        home = await homeResponse.json();
-        designSvg = (await designResponse.json()).svg || "";
+        if (mode === "ha" && ha) {
+          home = await ha.send("gulavillan_dashboard/entities");
+          const drawing = await fetch("page.svg?v=" + encodeURIComponent(pageVersion));
+          designSvg = drawing.ok ? await drawing.text() : "";
+          const listed = await ha.send("get_states");
+          if (Array.isArray(listed)) {
+            for (const item of listed) {
+              states[item.entity_id] = { state: item.state, last_changed: item.last_changed, attributes: item.attributes || {} };
+            }
+          }
+          await ha.send("subscribe_events", { event_type: "state_changed" });
+          ha.onEvent = (event) => {
+            if (event.event_type !== "state_changed") return;
+            const fresh = event.data && event.data.new_state;
+            if (!fresh) return;
+            states[event.data.entity_id] = { state: fresh.state, last_changed: fresh.last_changed, attributes: fresh.attributes || {} };
+            if (tab === "hem" && hemRoot) {
+              refreshHem();
+              return;
+            }
+            const active = document.activeElement;
+            if (active && view.contains(active) && active.matches("input")) return;
+            render();
+          };
+        } else {
+          const [homeResponse, designResponse] = await Promise.all([
+            fetch("/api/home", { credentials: "same-origin" }),
+            fetch("/api/design", { credentials: "same-origin" }),
+          ]);
+          home = await homeResponse.json();
+          designSvg = (await designResponse.json()).svg || "";
+        }
         seedStates();
         const hash = location.hash.slice(1);
         if (home.tabs?.includes(hash)) tab = hash;
         renderTabs();
         render();
-        connect();
+        if (mode !== "ha") connect();
         setInterval(() => { if (tab === "hem") refreshHem(); }, 1000);
         setInterval(async () => {
           const response = await fetch("/api/home", { credentials: "same-origin" });
@@ -904,14 +992,157 @@
         if (ok) document.querySelector("#modal").hidden = true;
       });
 
+      function HaClient(token) {
+        this.token = token;
+        this.id = 1;
+        this.pending = new Map();
+        this.onEvent = null;
+      }
+      HaClient.prototype.connect = function () {
+        const protocol = location.protocol === "https:" ? "wss" : "ws";
+        const socket = new WebSocket(protocol + "://" + location.host + "/api/websocket");
+        this.ws = socket;
+        const client = this;
+        return new Promise((resolve, reject) => {
+          socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.type === "auth_required") {
+              socket.send(JSON.stringify({ type: "auth", access_token: client.token }));
+            } else if (message.type === "auth_ok") {
+              socket.onmessage = (next) => client._receive(JSON.parse(next.data));
+              resolve();
+            } else if (message.type === "auth_invalid") {
+              reject(new Error("auth"));
+            }
+          };
+          socket.onerror = () => reject(new Error("socket"));
+        });
+      };
+      HaClient.prototype.send = function (type, extra) {
+        const id = this.id++;
+        const client = this;
+        return new Promise((resolve, reject) => {
+          client.pending.set(id, { resolve, reject });
+          client.ws.send(JSON.stringify(Object.assign({ id, type }, extra || {})));
+        });
+      };
+      HaClient.prototype._receive = function (message) {
+        if (message.type === "result" && this.pending.has(message.id)) {
+          const waiter = this.pending.get(message.id);
+          this.pending.delete(message.id);
+          if (message.success) waiter.resolve(message.result);
+          else waiter.reject(message.error || new Error("failed"));
+          return;
+        }
+        if (message.type === "event" && this.onEvent) this.onEvent(message.event);
+      };
+
+      function waitForPanelToken() {
+        return new Promise((resolve) => {
+          const timer = setTimeout(() => resolve(""), 700);
+          window.addEventListener("message", function onMessage(event) {
+            if (event.origin !== location.origin) return;
+            if (!event.data || event.data.type !== "gulavillan-auth") return;
+            clearTimeout(timer);
+            window.removeEventListener("message", onMessage);
+            resolve(event.data.access_token || "");
+          });
+        });
+      }
+
+      async function tokenFromStorage() {
+        try {
+          const saved = JSON.parse(localStorage.getItem("hassTokens") || "null");
+          if (!saved || !saved.access_token) return "";
+          if (!saved.expires || saved.expires > Date.now() + 10000) return saved.access_token;
+          if (!saved.refresh_token) return "";
+          const body = new URLSearchParams({
+            grant_type: "refresh_token",
+            refresh_token: saved.refresh_token,
+            client_id: saved.clientId || location.origin,
+          });
+          const response = await fetch("/auth/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body,
+          });
+          if (!response.ok) return "";
+          const fresh = await response.json();
+          saved.access_token = fresh.access_token;
+          saved.expires = Date.now() + (fresh.expires_in || 1800) * 1000;
+          localStorage.setItem("hassTokens", JSON.stringify(saved));
+          return fresh.access_token;
+        } catch (err) {
+          return "";
+        }
+      }
+
+      async function loadVersion() {
+        try {
+          const response = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+          if (!response.ok) return;
+          const data = await response.json();
+          if (!data.version) return;
+          pageVersion = data.version;
+          const link = document.querySelector('link[rel="stylesheet"]');
+          if (link) link.href = "theme.css?v=" + encodeURIComponent(pageVersion);
+        } catch (err) {
+          /* Legacy port has no version file. */
+        }
+      }
+
+      function watchVersion() {
+        setInterval(async () => {
+          try {
+            const response = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data.version || data.version === pageVersion) return;
+            const url = new URL(location.href);
+            url.searchParams.set("v", data.version);
+            location.replace(url.toString());
+          } catch (err) {
+            /* Ignore until the next check. */
+          }
+        }, 30000);
+      }
+
       async function boot() {
-        const response = await fetch("/api/session", { credentials: "same-origin" });
-        if (response.status === 401) {
+        await loadVersion();
+        watchVersion();
+        const posted = await waitForPanelToken();
+        accessToken = posted || await tokenFromStorage();
+        if (accessToken) {
+          try {
+            ha = new HaClient(accessToken);
+            await ha.connect();
+            mode = "ha";
+            show();
+            return;
+          } catch (err) {
+            ha = null;
+            mode = "legacy";
+          }
+        }
+        let response = null;
+        try {
+          response = await fetch("/api/session", { credentials: "same-origin" });
+        } catch (err) {
+          response = null;
+        }
+        if (response && response.status === 401) {
           gate.hidden = false;
           app.hidden = true;
           return;
         }
-        show();
+        if (response && response.ok) {
+          show();
+          return;
+        }
+        document.querySelector("#gate-text").textContent = "Öppna Gulavillan från sidomenyn efter att du loggat in i Home Assistant.";
+        document.querySelector("#pin").hidden = true;
+        document.querySelector("#pin-form button").hidden = true;
+        gate.hidden = false;
       }
       boot();
     </script>
