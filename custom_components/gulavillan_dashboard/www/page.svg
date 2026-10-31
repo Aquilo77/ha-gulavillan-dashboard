@@ -72,7 +72,7 @@
         <rect x="1184" y="706" width="118" height="244" fill="#6b422c"/>
         <circle cx="1280" cy="830" r="6" fill="#e0b15a"/>
       </g>
-      <g data-entity="binary_sensor.ytterdorr" data-widget="visible-on">
+      <g data-entity="binary_sensor.ytterdorr" data-widget="visible-on" style="display:none">
         <polygon points="1184,706 1230,730 1230,950 1184,950" fill="#6b422c"/>
         <rect x="1230" y="706" width="72" height="244" fill="#1b2430"/>
       </g>
