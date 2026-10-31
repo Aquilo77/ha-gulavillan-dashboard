@@ -27,7 +27,8 @@
         padding: 8px 14px; text-decoration: none;
       }
       #gate, .editor { min-height: 100%; }
-      #gate { display: grid; place-items: center; }
+      #gate:not([hidden]) { display: grid; place-items: center; }
+      [hidden] { display: none !important; }
       .card {
         width: min(420px, calc(100% - 32px));
         background: var(--card); border: 1px solid var(--line);
@@ -90,7 +91,7 @@
       const gate = document.querySelector("#gate");
 
       async function session() {
-        const response = await fetch("/api/session");
+        const response = await fetch("/api/session", { credentials: "same-origin" });
         if (response.status === 401) return null;
         return response.json();
       }
@@ -98,8 +99,9 @@
       async function login(pin) {
         const response = await fetch("/api/login", {
           method: "POST",
+          credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pin }),
+          body: JSON.stringify({ pin: pin.trim() }),
         });
         return response.ok;
       }

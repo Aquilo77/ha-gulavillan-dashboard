@@ -96,7 +96,7 @@ class GulavillanConfigFlow(ConfigFlow, domain=DOMAIN):
         pin = ""
         if user_input is not None:
             port = _as_port(user_input.get("port")) or 0
-            pin = str(user_input.get("pin") or "")
+            pin = str(user_input.get("pin") or "").strip()
             errors = await self._validate(port, current=None)
             if not errors:
                 return self.async_create_entry(
@@ -132,7 +132,7 @@ class GulavillanOptionsFlow(OptionsFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             port = _as_port(user_input.get("port")) or 0
-            pin = str(user_input.get("pin") or "")
+            pin = str(user_input.get("pin") or "").strip()
             if port < MIN_PORT or port > MAX_PORT or port == 8123 or port == (_ha_port(self.hass) or -1):
                 errors["port"] = "invalid_port"
             elif port != current and not await async_port_available(port):

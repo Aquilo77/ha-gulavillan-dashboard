@@ -40,7 +40,7 @@ def entry_settings(entry: Any) -> dict[str, Any]:
         port = int(merged.get("port", DEFAULT_PORT))
     except (TypeError, ValueError):
         port = DEFAULT_PORT
-    return {"port": port, "pin": str(merged.get("pin") or "")}
+    return {"port": port, "pin": str(merged.get("pin") or "").strip()}
 
 
 def _access_token(entry_id: str, pin: str) -> str:
@@ -178,7 +178,11 @@ class PageServer:
 
     async def _page(self, request: web.Request) -> web.Response:
         html = _PAGE.read_text(encoding="utf-8")
-        return web.Response(text=html, content_type="text/html")
+        return web.Response(
+            text=html,
+            content_type="text/html",
+            headers={"Cache-Control": "no-store"},
+        )
 
     async def _session(self, request: web.Request) -> web.Response:
         if not self.authorized(request):
@@ -194,7 +198,7 @@ class PageServer:
             body = await request.json()
         except ValueError:
             body = {}
-        submitted = str(body.get("pin") or "")
+        submitted = str(body.get("pin") or "").strip()
         given = _access_token(self.entry.entry_id, submitted)
         if not hmac.compare_digest(given, self.token()):
             return self._deny()
