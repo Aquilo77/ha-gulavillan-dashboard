@@ -15,10 +15,13 @@ Kräver Home Assistant Core 2026.10 eller nyare, och [HACS](https://hacs.xyz/).
 1. Öppna **HACS → Integrationer**.
 2. Öppna menyn uppe till höger och välj **Anpassade arkiv** (Custom repositories).
 3. Klistra in `https://github.com/Aquilo77/ha-gulavillan-dashboard`.
-4. Välj kategori **Integration** och lägg till arkivet.
-5. Sök upp **Gulavillan**, ladda ner och starta om Home Assistant.
-6. Gå till **Inställningar → Enheter och tjänster → Lägg till integration** och välj **Gulavillan**.
-7. Välj titel (förvalt **Gulavillan**), ikon och om panelen bara ska synas för administratörer.
+4. Välj kategori **Integration** och lägg till arkivet. Starta inte om ännu.
+5. Sök upp **Gulavillan** i HACS och öppna det. Tryck på **Ladda ner** (Download) och vänta tills nedladdningen är klar.
+6. Starta om Home Assistant först nu.
+7. Gå till **Inställningar → Enheter och tjänster → Lägg till integration** och välj **Gulavillan**.
+8. Välj titel (förvalt **Gulavillan**), ikon och om panelen bara ska synas för administratörer.
+
+HACS tar bort anpassade arkiv som inte har laddats ner när Home Assistant startar om. Arkivet måste alltså laddas ner i HACS innan omstarten, annars försvinner det.
 
 Ingen YAML behövs. Efter omstarten finns panelen i sidomenyn.
 
