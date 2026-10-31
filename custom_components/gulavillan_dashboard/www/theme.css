@@ -1,0 +1,37 @@
+/* Gulavillan theme.
+   Colors, type, radii, shadows and spacing live in this file.
+   Restyle the page by editing these custom properties only. */
+
+:root {
+  color-scheme: dark;
+  --font: system-ui, sans-serif;
+  --weight: 400;
+  --weight-strong: 650;
+  --bg: #10151c;
+  --card: #1b2430;
+  --text: #f4f0e8;
+  --muted: #b3aa9c;
+  --accent: #e0b15a;
+  --accent-ink: #1c1408;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-width: 1px;
+  --danger: #d4655b;
+  --ok: #7eaf5c;
+  --warn: #e0b15a;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --tap: 48px;
+  --tab-h: 64px;
+  --title: 1.5rem;
+  --value: 2.4rem;
+  --card-min: 280px;
+  --gap: 16px;
+  --chart-h: 96px;
+}

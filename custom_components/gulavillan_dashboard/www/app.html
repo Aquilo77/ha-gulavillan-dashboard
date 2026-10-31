@@ -4,97 +4,188 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gulavillan</title>
+    <link rel="stylesheet" href="/theme.css" />
     <style>
-      :root { color-scheme: dark; --bg: #10151c; --card: #1b2430; --text: #f4f0e8; --muted: #b3aa9c; --accent: #e0b15a; --line: rgba(255, 255, 255, 0.08); }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+      html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-weight: var(--weight); }
       button, input { font: inherit; color: inherit; }
-      #stage { width: 100vw; height: 100vh; }
-      #stage svg { width: 100vw; height: 100vh; display: block; }
+      button { cursor: pointer; }
+      #app { min-height: 100vh; display: flex; flex-direction: column; }
+      #tabs { display: flex; gap: var(--space-sm); overflow-x: auto; padding: var(--space-sm) var(--space); position: sticky; top: 0; background: var(--bg); z-index: 2; }
+      #tabs button { min-height: var(--tap); padding: 0 var(--space); border-radius: var(--radius-pill); border: var(--line-width) solid var(--line); background: transparent; white-space: nowrap; }
+      #tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); font-weight: var(--weight-strong); }
+      #view { flex: 1; padding: var(--space); display: flex; flex-direction: column; gap: var(--gap); }
+      #view.hem { padding: 0; }
+      #stage { height: calc(100vh - var(--tab-h)); }
+      #stage svg { width: 100%; height: 100%; display: block; }
       #stage svg [data-action="toggle"] { cursor: pointer; }
-      #gate:not([hidden]) { min-height: 100%; display: grid; place-items: center; }
+      .page { display: flex; flex-direction: column; gap: var(--gap); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min), 1fr)); gap: var(--gap); }
+      .card { background: var(--card); border: var(--line-width) solid var(--line); border-radius: var(--radius); padding: var(--space); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: var(--space-sm); }
+      .card.alert { border-color: var(--danger); }
+      .card.row { flex-direction: row; }
+      h1, h2, h3, p { margin: 0; }
+      h1, h2, h3 { font-weight: var(--weight-strong); }
+      h2 { font-size: var(--title); }
+      .muted { color: var(--muted); }
+      .value { font-size: var(--value); font-weight: var(--weight-strong); }
+      .row { display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; }
+      button.action, button.primary { min-height: var(--tap); padding: 0 var(--space); border: 0; border-radius: var(--radius-sm); background: var(--accent); color: var(--accent-ink); font-weight: var(--weight-strong); }
+      button.ghost { min-height: var(--tap); padding: 0 var(--space); border-radius: var(--radius-sm); border: var(--line-width) solid var(--line); background: transparent; }
+      input[type="range"] { width: 100%; height: var(--tap); accent-color: var(--accent); }
+      input[type="password"], input[type="text"] { width: 100%; min-height: var(--tap); border-radius: var(--radius-sm); border: var(--line-width) solid var(--line); background: var(--bg); padding: 0 var(--space-sm); }
+      .avatar { width: var(--tap); height: var(--tap); border-radius: var(--radius-pill); background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: var(--weight-strong); flex: none; }
+      .shot { width: 100%; border-radius: var(--radius-sm); background: var(--bg); }
+      .chart { width: 100%; height: var(--chart-h); color: var(--accent); }
+      #gate:not([hidden]) { min-height: 100vh; display: grid; place-items: center; padding: var(--space); }
+      #gate .card, #modal .card { width: min(420px, 100%); }
       [hidden] { display: none !important; }
-      .card { width: min(420px, calc(100% - 32px)); background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
-      .card h1 { margin: 0 0 8px; letter-spacing: -0.03em; }
-      .card p { color: var(--muted); }
-      input { width: 100%; border-radius: 12px; border: 1px solid var(--line); background: #10151c; padding: 12px; }
-      button.primary { background: var(--accent); color: #1c1408; border: 0; border-radius: 12px; padding: 12px 16px; cursor: pointer; font-weight: 650; }
-      .status { color: var(--muted); min-height: 1.2em; }
+      #modal:not([hidden]) { position: fixed; inset: 0; background: var(--bg); display: grid; place-items: center; padding: var(--space); z-index: 3; }
     </style>
   </head>
   <body>
     <div id="gate" hidden>
       <form class="card" id="pin-form">
         <h1>Gulavillan</h1>
-        <p>Sidan är låst med en pinkod som du valt i Home Assistant.</p>
+        <p class="muted">Sidan är låst med en pinkod som du valt i Home Assistant.</p>
         <input id="pin" type="password" autocomplete="current-password" placeholder="Pinkod" />
-        <p class="status" id="pin-status"></p>
+        <p class="muted" id="pin-status"></p>
         <button class="primary" type="submit">Öppna</button>
       </form>
     </div>
-    <div id="stage" hidden></div>
+    <div id="app" hidden>
+      <nav id="tabs" aria-label="Sidor"></nav>
+      <div id="view"></div>
+    </div>
+    <div id="modal" hidden>
+      <form class="card" id="alarm-form">
+        <h2 id="alarm-title">Larm</h2>
+        <p class="muted">Skriv sidans pinkod för att ändra larmet.</p>
+        <input id="alarm-pin" type="password" autocomplete="current-password" placeholder="Pinkod" />
+        <input id="alarm-code" type="password" placeholder="Larmkod" hidden />
+        <p class="muted" id="alarm-status"></p>
+        <div class="row">
+          <button class="primary" type="submit">Bekräfta</button>
+          <button class="ghost" id="alarm-cancel" type="button">Avbryt</button>
+        </div>
+      </form>
+    </div>
     <script>
-      const ON = new Set(["on", "open", "unlocked", "home", "heat", "cool", "heat_cool", "dry", "fan_only", "playing"]);
-      const LABELS = { on: "På", off: "Av", unavailable: "Otillgänglig", unknown: "Okänt", heat: "Värme", cool: "Kyla", open: "Öppen", closed: "Stängd", locked: "Låst", unlocked: "Olåst" };
+      const ON = new Set(["on", "open", "unlocked", "home", "heat", "cool", "heat_cool", "dry", "fan_only", "playing", "paused", "buffering"]);
+      const LABELS = { on: "På", off: "Av", unavailable: "Otillgänglig", unknown: "Okänt", heat: "Värme", cool: "Kyla", heat_cool: "Auto", auto: "Auto", dry: "Avfukt", fan_only: "Fläkt", open: "Öppen", closed: "Stängd", locked: "Låst", unlocked: "Olåst", home: "Hemma", not_home: "Borta", playing: "Spelar", paused: "Paus", buffering: "Buffrar", idle: "Vilande", standby: "Vilande", charging: "Laddar", disarmed: "Avväpnat", armed_home: "Hemma", armed_away: "Borta", armed_night: "Natt", armed_vacation: "Borta", pending: "Väntar", arming: "Aktiverar", disarming: "Avaktiverar", triggered: "Utlöst", sunny: "Sol", cloudy: "Moln", partlycloudy: "Halvklart", rainy: "Regn", pouring: "Skyfall", snowy: "Snö", lightning: "Åska", fog: "Dimma", windy: "Blåsigt", hail: "Hagel", "clear-night": "Klart", exceptional: "Oväder" };
+      const TABS = { hem: "Hem", belysning: "Belysning", klimat: "Klimat", narvaro: "Närvaro", sakerhet: "Säkerhet", energi: "Energi", media: "Media", system: "System", familj: "Familj" };
+      const ALARM_MODES = [["disarm", "Avväpna"], ["arm_home", "Hemma"], ["arm_away", "Borta"], ["arm_night", "Natt"]];
+      const ALARM_FEATURES = { arm_home: 1, arm_away: 2, arm_night: 4 };
+      let home = null;
       let states = {};
       let slots = { lights: [] };
-
-      function resolveSlots() {
-        const list = Object.entries(states);
-        const label = (id, state) => `${id} ${state.attributes?.friendly_name || ""}`.toLowerCase();
-        const temps = list.filter(([id, state]) => id.startsWith("sensor.") && (state.attributes?.device_class === "temperature" || state.attributes?.unit_of_measurement === "°C" || state.attributes?.unit_of_measurement === "°F"));
-        const outdoor = temps.find(([id, state]) => /ute|utom|out|outside|weather|vader|tradgard|balkong|fasad/.test(label(id, state)));
-        const indoorNamed = temps.find((item) => item !== outdoor && /inne|inom|indoor|vardagsrum|boyta|rum|kok|sovrum/.test(label(item[0], item[1])));
-        const indoor = indoorNamed || temps.find((item) => item !== outdoor);
-        const humidity = list.find(([id, state]) => id.startsWith("sensor.") && state.attributes?.device_class === "humidity")
-          || list.find(([id, state]) => id.startsWith("sensor.") && state.attributes?.unit_of_measurement === "%" && /fukt|humid/.test(label(id, state)));
-        const climate = list.find(([id]) => id.startsWith("climate."));
-        const weather = list.find(([id]) => id.startsWith("weather."));
-        const pool = list.filter(([id]) => id.startsWith("light.")).map(([id]) => id);
-        const lights = [];
-        for (const hint of [/vardagsrum|living/, /kok|kitchen/, /hall|entre|entry/, /sovrum|bed/]) {
-          const index = pool.findIndex((id) => hint.test(label(id, states[id] || {})));
-          if (index >= 0) lights.push(pool.splice(index, 1)[0]);
-        }
-        pool.sort((a, b) => label(a, states[a] || {}).localeCompare(label(b, states[b] || {}), "sv"));
-        lights.push(...pool);
-        const door = list.find(([id, state]) => id.startsWith("binary_sensor.") && (state.attributes?.device_class === "door" || state.attributes?.device_class === "garage_door" || /dorr|door|ytter|entre/.test(label(id, state))));
-        slots = {
-          outdoor: outdoor?.[0] || weather?.[0] || "sensor.temperatur_ute",
-          indoor: indoor?.[0] || "sensor.temperatur_inne",
-          humidity: humidity?.[0] || "sensor.luftfuktighet",
-          climate: climate?.[0] || "climate.vardagsrum",
-          door: door?.[0] || "binary_sensor.ytterdorr",
-          lights,
-        };
-      }
-
-      function entityFor(el) {
-        if (el.dataset.slot === "light") return slots.lights[Number(el.dataset.index || 0)] || el.dataset.entity;
-        if (el.dataset.slot && slots[el.dataset.slot]) return slots[el.dataset.slot];
-        return el.dataset.entity;
-      }
-      const stage = document.querySelector("#stage");
+      let tab = "hem";
+      let designSvg = "";
+      let svgRoot = null;
+      let alarmTarget = null;
+      const view = document.querySelector("#view");
       const gate = document.querySelector("#gate");
+      const app = document.querySelector("#app");
 
-      async function session() {
-        const response = await fetch("/api/session", { credentials: "same-origin" });
-        if (response.status === 401) return null;
-        return response.json();
+      function h(tag, props, children) {
+        const node = document.createElement(tag);
+        const options = props || {};
+        if (options.class) node.className = options.class;
+        if (options.type) node.type = options.type;
+        if (options.text != null) node.textContent = String(options.text);
+        if (options.alt != null) node.alt = options.alt;
+        if (options.src) node.src = options.src;
+        for (const child of children || []) if (child) node.append(child);
+        return node;
       }
 
-      async function login(pin) {
-        const response = await fetch("/api/login", {
+      function allEntities() {
+        const list = [];
+        for (const floor of home?.floors || []) for (const area of floor.areas) list.push(...area.entities);
+        return list;
+      }
+
+      function seedStates() {
+        for (const entity of allEntities()) {
+          if (!states[entity.entity_id]) {
+            states[entity.entity_id] = { state: entity.state, last_changed: entity.last_changed, attributes: entity.attributes || {} };
+          }
+        }
+      }
+
+      function live(entity) {
+        return states[entity.entity_id] || { state: entity.state, last_changed: entity.last_changed, attributes: entity.attributes || {} };
+      }
+
+      function labelOf(state, kind) {
+        if ((kind === "door" || kind === "window" || kind === "opening") && (state === "on" || state === "off")) return state === "on" ? "Öppen" : "Stängd";
+        if ((kind === "smoke" || kind === "moisture") && (state === "on" || state === "off")) return state === "on" ? "Larm" : "Ok";
+        if (kind === "lock" && state === "on") return "Olåst";
+        if (kind === "lock" && state === "off") return "Låst";
+        return LABELS[String(state)] || String(state ?? "–");
+      }
+
+      function formatNumber(value, digits) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "–";
+        return new Intl.NumberFormat("sv-SE", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(number);
+      }
+
+      function ago(iso) {
+        if (!iso) return "";
+        const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+        if (seconds < 60) return "just nu";
+        if (seconds < 3600) return "för " + Math.floor(seconds / 60) + " min sedan";
+        if (seconds < 86400) return "för " + Math.floor(seconds / 3600) + " tim sedan";
+        return "för " + Math.floor(seconds / 86400) + " dygn sedan";
+      }
+
+      function grouped(kinds) {
+        const want = new Set(kinds);
+        return (home.floors || []).map((floor) => ({
+          name: floor.name,
+          areas: floor.areas.map((area) => ({
+            name: area.name,
+            entities: area.entities.filter((entity) => want.has(entity.kind)),
+          })).filter((area) => area.entities.length),
+        })).filter((floor) => floor.areas.length);
+      }
+
+      function findEntity(id) {
+        return allEntities().find((entity) => entity.entity_id === id) || null;
+      }
+
+      async function act(body) {
+        const response = await fetch("/api/action", {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pin: pin.trim() }),
+          body: JSON.stringify(body),
         });
         return response.ok;
       }
 
+      function syncSlots() {
+        const villa = home?.villa || {};
+        slots = {
+          outdoor: villa.outdoor || "",
+          outdoorKind: villa.outdoor_kind || "",
+          indoor: villa.indoor || "",
+          humidity: villa.humidity || "",
+          climate: villa.climate || "",
+          door: villa.door || "",
+          lights: villa.lights || [],
+        };
+      }
+
+      function entityFor(el) {
+        if (el.dataset.slot === "light") return slots.lights[Number(el.dataset.index || 0)] || "";
+        if (el.dataset.slot) return slots[el.dataset.slot] || "";
+        return "";
+      }
+
       function rawValue(state, el) {
-        if (el.dataset.slot === "outdoor" && String(slots.outdoor).startsWith("weather.")) {
+        if (el.dataset.slot === "outdoor" && slots.outdoorKind === "weather") {
           const temp = state?.attributes?.temperature;
           return temp == null || temp === "" ? null : temp;
         }
@@ -105,10 +196,6 @@
           if (indoor != null && indoor !== "") return indoor;
         }
         if (!state) return null;
-        if (el.dataset.attribute) {
-          const value = state.attributes?.[el.dataset.attribute];
-          return value == null || value === "" ? null : value;
-        }
         if (state.state === "unavailable" || state.state === "unknown") return null;
         return state.state;
       }
@@ -128,30 +215,24 @@
         if (widget === "label") return LABELS[String(raw)] || String(raw);
         if (el.dataset.decimals != null && el.dataset.decimals !== "") {
           const number = Number(raw);
-          if (Number.isFinite(number)) {
-            return new Intl.NumberFormat("sv-SE", {
-              minimumFractionDigits: Number(el.dataset.decimals),
-              maximumFractionDigits: Number(el.dataset.decimals),
-            }).format(number);
-          }
+          if (Number.isFinite(number)) return formatNumber(number, Number(el.dataset.decimals));
         }
         return String(raw);
       }
 
       function apply(root) {
-        resolveSlots();
+        syncSlots();
         root.querySelectorAll("[data-widget]").forEach((el) => {
           const widget = el.dataset.widget;
           const state = states[entityFor(el)];
           if (["value", "label", "name", "unit", "clock", "date"].includes(widget)) el.textContent = textOf(state, el);
           if (widget === "state-fill") {
             const on = state && ON.has(state.state);
-            el.setAttribute("fill", on ? (el.dataset.on || "#e0b15a") : (el.dataset.off || "#334155"));
+            if (el.dataset.on && el.dataset.off) el.setAttribute("fill", on ? el.dataset.on : el.dataset.off);
           }
           if (widget === "visible-on" || widget === "visible-off") {
             const on = !!(state && ON.has(state.state));
-            const show = widget === "visible-on" ? on : !on;
-            el.style.display = show ? "" : "none";
+            el.style.display = (widget === "visible-on" ? on : !on) ? "" : "none";
           }
           if (widget === "bar") {
             if (!el.dataset.fullWidth) el.dataset.fullWidth = el.getAttribute("width") || "100";
@@ -169,26 +250,26 @@
         await Promise.all(plots.map(async (el, index) => {
           const entity = entityFor(el);
           if (!entity) return;
-          const response = await fetch(`/api/history?entity_id=${encodeURIComponent(entity)}&hours=${Number(el.dataset.hours || 24)}`, { credentials: "same-origin" });
+          const response = await fetch("/api/history?entity_id=" + encodeURIComponent(entity) + "&hours=" + Number(el.dataset.hours || 24), { credentials: "same-origin" });
           const points = response.ok ? ((await response.json()).points || []) : [];
-          const live = Number(rawValue(states[entity], el));
-          if (Number.isFinite(live)) points.push(live);
+          const current = Number(rawValue(states[entity], el));
+          if (Number.isFinite(current)) points.push(current);
+          if (points.length < 2) return;
           const x = Number(el.getAttribute("x") || 0);
           const y = Number(el.getAttribute("y") || 0);
           const width = Number(el.getAttribute("width") || 200);
           const height = Number(el.getAttribute("height") || 80);
-          let line = svg.querySelector(`polyline[data-spark="${index}"]`);
+          let line = svg.querySelector('polyline[data-spark="' + index + '"]');
           if (!line) {
             line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
             line.setAttribute("fill", "none");
-            line.setAttribute("stroke", el.dataset.stroke || "#e0b15a");
+            line.setAttribute("stroke", el.dataset.stroke || "currentColor");
             line.setAttribute("stroke-width", "4");
             line.setAttribute("stroke-linejoin", "round");
             line.setAttribute("stroke-linecap", "round");
             line.dataset.spark = String(index);
             el.parentNode.append(line);
           }
-          if (points.length < 2) return;
           const min = Math.min(...points);
           const max = Math.max(...points);
           const span = max - min || 1;
@@ -196,66 +277,490 @@
           line.setAttribute("points", points.map((value, i) => {
             const px = x + i * step;
             const py = y + height - ((value - min) / span) * (height - 12) - 6;
-            return `${px.toFixed(1)},${py.toFixed(1)}`;
+            return px.toFixed(1) + "," + py.toFixed(1);
           }).join(" "));
         }));
       }
 
-      function connect(svg) {
+      function ensureVilla() {
+        if (svgRoot && view.contains(svgRoot)) {
+          apply(svgRoot);
+          return;
+        }
+        const parsed = new DOMParser().parseFromString(designSvg, "image/svg+xml");
+        svgRoot = parsed.querySelector("svg");
+        if (!svgRoot) return;
+        svgRoot.setAttribute("width", "100%");
+        svgRoot.setAttribute("height", "100%");
+        const stage = h("div", { id: "stage" });
+        stage.id = "stage";
+        stage.append(svgRoot);
+        view.replaceChildren(stage);
+        svgRoot.addEventListener("click", (event) => {
+          const target = event.target.closest("[data-action='toggle']");
+          const entityId = target ? entityFor(target) : "";
+          if (entityId) act({ action: "toggle", entity_id: entityId });
+        });
+        apply(svgRoot);
+        drawSparks(svgRoot);
+      }
+
+      function lightCard(entity) {
+        const state = live(entity);
+        const card = h("article", { class: "card" });
+        card.append(h("h3", { text: entity.name }));
+        card.append(h("p", { class: "muted", text: labelOf(state.state) }));
+        const button = h("button", { class: "action", type: "button", text: state.state === "on" ? "Släck" : "Tänd" });
+        button.addEventListener("click", () => act({ action: "toggle", entity_id: entity.entity_id }));
+        card.append(button);
+        const modes = state.attributes.supported_color_modes || [];
+        const dimmable = entity.domain === "light" && (state.attributes.brightness != null || modes.some((mode) => mode !== "onoff"));
+        if (dimmable) {
+          const input = document.createElement("input");
+          input.type = "range";
+          input.min = "0";
+          input.max = "100";
+          const brightness = Number(state.attributes.brightness);
+          input.value = Number.isFinite(brightness) ? String(Math.round(brightness / 255 * 100)) : "0";
+          input.addEventListener("change", () => act({ action: "brightness", entity_id: entity.entity_id, brightness_pct: Number(input.value) }));
+          card.append(input);
+        }
+        return card;
+      }
+
+      function renderLights(page) {
+        const lights = allEntities().filter((entity) => entity.kind === "light");
+        const all = h("button", { class: "action", type: "button", text: "Släck allt" });
+        all.addEventListener("click", () => act({ action: "turn_off", entity_ids: lights.map((entity) => entity.entity_id) }));
+        const head = h("div", { class: "row" }, [h("h2", { text: "Belysning" }), all]);
+        page.append(head);
+        for (const floor of grouped(["light"])) {
+          page.append(h("h2", { text: floor.name }));
+          for (const area of floor.areas) {
+            const off = h("button", { class: "ghost", type: "button", text: "Släck allt" });
+            off.addEventListener("click", () => act({ action: "turn_off", entity_ids: area.entities.map((entity) => entity.entity_id) }));
+            page.append(h("div", { class: "row" }, [h("h3", { text: area.name }), off]));
+            page.append(h("div", { class: "grid" }, area.entities.map(lightCard)));
+          }
+        }
+      }
+
+      function sensorLine(entity) {
+        const state = live(entity);
+        const unit = state.attributes.unit_of_measurement || "";
+        return h("p", { text: entity.name + ": " + formatNumber(state.state, 1) + (unit ? " " + unit : "") });
+      }
+
+      function climateCard(entity) {
+        const state = live(entity);
+        const card = h("article", { class: "card" });
+        card.append(h("h3", { text: entity.name }));
+        const current = state.attributes.current_temperature;
+        const target = state.attributes.temperature;
+        card.append(h("p", { class: "value", text: formatNumber(current, 1) + "°" }));
+        card.append(h("p", { class: "muted", text: "Mål " + formatNumber(target, 1) + "° · " + labelOf(state.state) }));
+        const row = h("div", { class: "row" });
+        for (const [delta, text] of [[-0.5, "−"], [0.5, "+"]]) {
+          const button = h("button", { class: "ghost", type: "button", text });
+          button.addEventListener("click", () => {
+            const base = Number(live(entity).attributes.temperature);
+            const next = (Number.isFinite(base) ? base : 20) + delta;
+            act({ action: "climate_temperature", entity_id: entity.entity_id, temperature: Math.round(next * 2) / 2 });
+          });
+          row.append(button);
+        }
+        const modes = state.attributes.hvac_modes || ["heat", "off"];
+        for (const mode of modes) {
+          const button = h("button", { class: "ghost", type: "button", text: labelOf(mode) });
+          button.addEventListener("click", () => act({ action: "climate_mode", entity_id: entity.entity_id, hvac_mode: mode }));
+          row.append(button);
+        }
+        card.append(row);
+        return card;
+      }
+
+      function renderClimate(page) {
+        page.append(h("h2", { text: "Klimat" }));
+        const summary = h("div", { class: "grid" });
+        const outdoor = findEntity(home.villa?.outdoor);
+        if (outdoor) {
+          const state = live(outdoor);
+          const value = home.villa.outdoor_kind === "weather" ? state.attributes.temperature : state.state;
+          summary.append(h("article", { class: "card" }, [
+            h("h3", { text: "Ute" }),
+            h("p", { class: "value", text: formatNumber(value, 1) + "°" }),
+            h("p", { class: "muted", text: outdoor.name }),
+          ]));
+        }
+        const weather = findEntity(home.focus?.weather);
+        if (weather) {
+          const state = live(weather);
+          summary.append(h("article", { class: "card" }, [
+            h("h3", { text: weather.name }),
+            h("p", { class: "value", text: labelOf(state.state, "weather") }),
+            h("p", { class: "muted", text: formatNumber(state.attributes.temperature, 1) + "°" }),
+          ]));
+        }
+        if (summary.childNodes.length) page.append(summary);
+        for (const floor of grouped(["climate", "temperature", "humidity", "illuminance"])) {
+          page.append(h("h2", { text: floor.name }));
+          for (const area of floor.areas) {
+            page.append(h("h3", { text: area.name }));
+            const climates = area.entities.filter((entity) => entity.kind === "climate");
+            const sensors = area.entities.filter((entity) => entity.kind !== "climate");
+            if (climates.length) page.append(h("div", { class: "grid" }, climates.map(climateCard)));
+            if (sensors.length) page.append(h("article", { class: "card" }, sensors.map(sensorLine)));
+          }
+        }
+      }
+
+      function personCard(entity) {
+        const state = live(entity);
+        const card = h("article", { class: "card row" });
+        card.append(h("div", { class: "avatar", text: (entity.name || "?").trim().charAt(0).toUpperCase() }));
+        const text = h("div");
+        text.append(h("h3", { text: entity.name }));
+        text.append(h("p", { class: "muted", text: labelOf(state.state) }));
+        card.append(text);
+        return card;
+      }
+
+      function motionCard(entity) {
+        const state = live(entity);
+        const card = h("article", { class: state.state === "on" ? "card alert" : "card" });
+        card.append(h("h3", { text: entity.name }));
+        card.append(h("p", { text: state.state === "on" ? "Rörelse" : "Still" }));
+        card.append(h("p", { class: "muted", text: ago(state.last_changed) }));
+        return card;
+      }
+
+      function renderPresence(page) {
+        page.append(h("h2", { text: "Närvaro" }));
+        const people = allEntities().filter((entity) => entity.kind === "person");
+        const trackers = allEntities().filter((entity) => entity.kind === "tracker");
+        if (people.length) page.append(h("div", { class: "grid" }, people.map(personCard)));
+        if (trackers.length) page.append(h("div", { class: "grid" }, trackers.map(personCard)));
+        for (const floor of grouped(["motion"])) {
+          page.append(h("h2", { text: floor.name }));
+          for (const area of floor.areas) {
+            page.append(h("h3", { text: area.name }));
+            page.append(h("div", { class: "grid" }, area.entities.map(motionCard)));
+          }
+        }
+      }
+
+      function isAlert(entity) {
+        const state = live(entity).state;
+        if (state === "unavailable" || state === "unknown") return true;
+        if (entity.kind === "lock") return state === "unlocked" || state === "on";
+        return ["on", "open"].includes(state);
+      }
+
+      function securityCard(entity) {
+        const state = live(entity);
+        const card = h("article", { class: isAlert(entity) ? "card alert" : "card" });
+        card.append(h("h3", { text: entity.name }));
+        card.append(h("p", { text: labelOf(state.state, entity.kind) }));
+        return card;
+      }
+
+      function alarmCard(entity) {
+        const state = live(entity);
+        const features = Number(state.attributes.supported_features || 0);
+        const card = h("article", { class: state.state === "triggered" ? "card alert" : "card" });
+        card.append(h("h3", { text: entity.name }));
+        card.append(h("p", { class: "value", text: labelOf(state.state) }));
+        const row = h("div", { class: "row" });
+        for (const [mode, text] of ALARM_MODES) {
+          if (mode !== "disarm" && features && (features & ALARM_FEATURES[mode]) === 0) continue;
+          const button = h("button", { class: "action", type: "button", text });
+          button.addEventListener("click", () => openAlarm(entity, mode));
+          row.append(button);
+        }
+        card.append(row);
+        return card;
+      }
+
+      function cameraCard(entity) {
+        const card = h("article", { class: "card" });
+        card.append(h("h3", { text: entity.name }));
+        const img = h("img", { class: "shot", alt: "", src: "/api/camera/" + encodeURIComponent(entity.entity_id) });
+        img.addEventListener("error", () => img.replaceWith(h("p", { class: "muted", text: "Ingen bild" })));
+        card.append(img);
+        return card;
+      }
+
+      function renderSecurity(page) {
+        page.append(h("h2", { text: "Säkerhet" }));
+        const alarms = allEntities().filter((entity) => entity.kind === "alarm");
+        if (alarms.length) page.append(h("div", { class: "grid" }, alarms.map(alarmCard)));
+        for (const floor of grouped(["door", "window", "opening", "lock", "smoke", "moisture"])) {
+          page.append(h("h2", { text: floor.name }));
+          for (const area of floor.areas) {
+            page.append(h("h3", { text: area.name }));
+            page.append(h("div", { class: "grid" }, area.entities.map(securityCard)));
+          }
+        }
+        const cameras = allEntities().filter((entity) => entity.kind === "camera");
+        if (cameras.length) {
+          page.append(h("h2", { text: "Kameror" }));
+          page.append(h("div", { class: "grid" }, cameras.map(cameraCard)));
+        }
+      }
+
+      function focusCard(id, title) {
+        const entity = findEntity(id);
+        if (!entity) return null;
+        const state = live(entity);
+        const unit = state.attributes.unit_of_measurement || "";
+        return h("article", { class: "card" }, [
+          h("h3", { text: title }),
+          h("p", { class: "value", text: formatNumber(state.state, unit.includes("kWh") ? 2 : 1) }),
+          h("p", { class: "muted", text: (unit ? unit + " · " : "") + entity.name }),
+        ]);
+      }
+
+      async function drawPrice(host, entityId) {
+        const hours = Math.max(1, new Date().getHours() + 1);
+        const response = await fetch("/api/history?entity_id=" + encodeURIComponent(entityId) + "&hours=" + hours, { credentials: "same-origin" });
+        const points = response.ok ? ((await response.json()).points || []) : [];
+        if (points.length < 2) return;
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 300 80");
+        svg.setAttribute("class", "chart");
+        const min = Math.min(...points);
+        const max = Math.max(...points);
+        const span = max - min || 1;
+        const step = 300 / (points.length - 1);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+        line.setAttribute("fill", "none");
+        line.setAttribute("stroke", "currentColor");
+        line.setAttribute("stroke-width", "3");
+        line.setAttribute("points", points.map((value, i) => (i * step).toFixed(1) + "," + (74 - ((value - min) / span) * 68).toFixed(1)).join(" "));
+        svg.append(line);
+        host.append(svg);
+      }
+
+      function renderEnergy(page) {
+        page.append(h("h2", { text: "Energi" }));
+        const summary = h("div", { class: "grid" });
+        for (const card of [focusCard(home.focus?.power, "Effekt nu"), focusCard(home.focus?.energy, "Energi idag"), focusCard(home.focus?.price, "Elpris")]) {
+          if (card) summary.append(card);
+        }
+        const price = summary.querySelectorAll(".card")[home.focus?.price ? summary.childNodes.length - 1 : -1];
+        if (home.focus?.price && price) price.dataset.chart = "price";
+        if (summary.childNodes.length) page.append(summary);
+        const chargers = allEntities().filter((entity) => entity.kind === "charger");
+        if (chargers.length) {
+          page.append(h("h2", { text: "Laddbox" }));
+          page.append(h("div", { class: "grid" }, chargers.map((entity) => {
+            const state = live(entity);
+            const unit = state.attributes.unit_of_measurement || "";
+            return h("article", { class: "card" }, [
+              h("h3", { text: entity.name }),
+              h("p", { text: labelOf(state.state) + (unit ? " " + unit : "") }),
+              h("p", { class: "muted", text: entity.device_name || "" }),
+            ]);
+          })));
+        }
+      }
+
+      function renderMedia(page) {
+        page.append(h("h2", { text: "Media" }));
+        const active = allEntities().filter((entity) => entity.kind === "media" && ["playing", "paused", "buffering", "on"].includes(live(entity).state));
+        page.append(h("div", { class: "grid" }, active.map((entity) => {
+          const state = live(entity);
+          const card = h("article", { class: "card" });
+          card.append(h("h3", { text: entity.name }));
+          card.append(h("p", { text: state.attributes.media_title || labelOf(state.state) }));
+          if (state.attributes.media_artist) card.append(h("p", { class: "muted", text: state.attributes.media_artist }));
+          const button = h("button", { class: "action", type: "button", text: state.state === "playing" ? "Paus" : "Spela" });
+          button.addEventListener("click", () => act({ action: "media", entity_id: entity.entity_id, command: "play_pause" }));
+          card.append(button);
+          if (typeof state.attributes.volume_level === "number") {
+            const input = document.createElement("input");
+            input.type = "range";
+            input.min = "0";
+            input.max = "100";
+            input.value = String(Math.round(state.attributes.volume_level * 100));
+            input.addEventListener("change", () => act({ action: "media", entity_id: entity.entity_id, command: "volume", volume_level: Number(input.value) / 100 }));
+            card.append(input);
+          }
+          return card;
+        })));
+      }
+
+      function renderSystem(page) {
+        page.append(h("h2", { text: "System" }));
+        const low = allEntities().filter((entity) => {
+          if (entity.kind !== "battery") return false;
+          const value = Number(live(entity).state);
+          return Number.isFinite(value) && value < 20;
+        });
+        page.append(h("h3", { text: "Svaga batterier" }));
+        page.append(low.length ? h("div", { class: "grid" }, low.map((entity) => h("article", { class: "card alert" }, [
+          h("h3", { text: entity.name }),
+          h("p", { class: "value", text: formatNumber(live(entity).state, 0) + "%" }),
+        ]))) : h("p", { class: "muted", text: "Inga batterier under 20 %." }));
+        const updates = allEntities().filter((entity) => entity.kind === "update" && live(entity).state === "on");
+        page.append(h("h3", { text: "Uppdateringar" }));
+        page.append(updates.length ? h("div", { class: "grid" }, updates.map((entity) => {
+          const state = live(entity);
+          return h("article", { class: "card" }, [
+            h("h3", { text: state.attributes.title || entity.name }),
+            h("p", { class: "muted", text: (state.attributes.installed_version || "") + " → " + (state.attributes.latest_version || "") }),
+          ]);
+        })) : h("p", { class: "muted", text: "Inga väntande uppdateringar." }));
+        page.append(h("h3", { text: "Otillgängliga" }));
+        page.append(h("p", { class: "value", text: String(home.unavailable_count || 0) }));
+        if (home.unavailable?.length) {
+          page.append(h("div", { class: "grid" }, home.unavailable.map((entity) => h("article", { class: "card alert" }, [h("h3", { text: entity.name })]))));
+        }
+      }
+
+      function renderFamily(page) {
+        page.append(h("h2", { text: "Familj" }));
+        const lunches = allEntities().filter((entity) => entity.kind === "lunch");
+        if (lunches.length) {
+          page.append(h("div", { class: "grid" }, lunches.map((entity) => h("article", { class: "card" }, [
+            h("h3", { text: entity.name }),
+            h("p", { text: live(entity).state }),
+          ]))));
+        }
+        const calendars = allEntities().filter((entity) => entity.kind === "calendar");
+        for (const entity of calendars) {
+          page.append(h("h3", { text: entity.name }));
+          const events = entity.events || [];
+          if (!events.length) {
+            page.append(h("p", { class: "muted", text: "Inga händelser de närmaste två dygnen." }));
+            continue;
+          }
+          page.append(h("div", { class: "grid" }, events.map((event) => h("article", { class: "card" }, [
+            h("h3", { text: event.summary || "Händelse" }),
+            h("p", { class: "muted", text: String(event.start || "") }),
+          ]))));
+        }
+      }
+
+      const RENDER = { belysning: renderLights, klimat: renderClimate, narvaro: renderPresence, sakerhet: renderSecurity, energi: renderEnergy, media: renderMedia, system: renderSystem, familj: renderFamily };
+
+      function renderTabs() {
+        const nav = document.querySelector("#tabs");
+        nav.replaceChildren(...(home.tabs || ["hem"]).map((id) => {
+          const button = h("button", { type: "button", text: TABS[id] || id });
+          button.setAttribute("aria-selected", id === tab ? "true" : "false");
+          button.addEventListener("click", () => {
+            tab = id;
+            history.replaceState(null, "", "#" + id);
+            renderTabs();
+            render();
+          });
+          return button;
+        }));
+      }
+
+      function render() {
+        if (!home.tabs?.includes(tab)) tab = "hem";
+        view.classList.toggle("hem", tab === "hem");
+        if (tab === "hem") {
+          ensureVilla();
+          return;
+        }
+        const page = h("div", { class: "page" });
+        RENDER[tab](page);
+        view.replaceChildren(page);
+        const chart = page.querySelector("[data-chart]");
+        if (chart && home.focus?.price) drawPrice(chart, home.focus.price);
+      }
+
+      function openAlarm(entity, mode) {
+        alarmTarget = { entity, mode };
+        document.querySelector("#alarm-title").textContent = entity.name;
+        document.querySelector("#alarm-code").hidden = !live(entity).attributes.code_arm_required;
+        document.querySelector("#alarm-status").textContent = "";
+        document.querySelector("#alarm-pin").value = "";
+        document.querySelector("#modal").hidden = false;
+      }
+
+      function connect() {
         const protocol = location.protocol === "https:" ? "wss" : "ws";
-        const socket = new WebSocket(`${protocol}://${location.host}/api/live`);
+        const socket = new WebSocket(protocol + "://" + location.host + "/api/live");
         socket.onmessage = (event) => {
           const message = JSON.parse(event.data);
           if (message.type === "snapshot") states = message.states || {};
           if (message.type === "state") states[message.entity_id] = message.state;
-          apply(svg);
-          if (message.type === "snapshot") drawSparks(svg);
+          seedStates();
+          if (tab === "hem" && svgRoot) {
+            apply(svgRoot);
+            if (message.type === "snapshot") drawSparks(svgRoot);
+            return;
+          }
+          const active = document.activeElement;
+          if (active && view.contains(active) && active.matches("input")) return;
+          render();
         };
-        socket.onclose = () => setTimeout(() => connect(svg), 2000);
+        socket.onclose = () => setTimeout(connect, 2000);
       }
 
       async function show() {
-        const body = await (await fetch("/api/design", { credentials: "same-origin" })).json();
-        const parsed = new DOMParser().parseFromString(body.svg, "image/svg+xml");
-        const svg = parsed.querySelector("svg");
-        if (!svg) return;
-        svg.setAttribute("width", "100%");
-        svg.setAttribute("height", "100%");
-        stage.replaceChildren(svg);
-        stage.hidden = false;
         gate.hidden = true;
-        apply(svg);
-        drawSparks(svg);
-        setInterval(() => apply(svg), 1000);
-        connect(svg);
-        svg.addEventListener("click", (event) => {
-          const target = event.target.closest("[data-action='toggle']");
-          const entityId = target ? entityFor(target) : "";
-          if (!entityId) return;
-          fetch("/api/action", {
-            method: "POST",
-            credentials: "same-origin",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ entity_id: entityId, action: "toggle" }),
-          });
-        });
+        app.hidden = false;
+        const [homeResponse, designResponse] = await Promise.all([
+          fetch("/api/home", { credentials: "same-origin" }),
+          fetch("/api/design", { credentials: "same-origin" }),
+        ]);
+        home = await homeResponse.json();
+        designSvg = (await designResponse.json()).svg || "";
+        seedStates();
+        const hash = location.hash.slice(1);
+        if (home.tabs?.includes(hash)) tab = hash;
+        renderTabs();
+        render();
+        connect();
+        setInterval(() => { if (tab === "hem" && svgRoot) apply(svgRoot); }, 1000);
+        setInterval(async () => {
+          const response = await fetch("/api/home", { credentials: "same-origin" });
+          if (!response.ok) return;
+          home = await response.json();
+          seedStates();
+          renderTabs();
+          if (tab !== "hem") render();
+        }, 120000);
       }
 
       document.querySelector("#pin-form").addEventListener("submit", async (event) => {
         event.preventDefault();
-        const ok = await login(document.querySelector("#pin").value);
-        document.querySelector("#pin-status").textContent = ok ? "" : "Fel pinkod";
-        if (ok) boot();
+        const response = await fetch("/api/login", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin: document.querySelector("#pin").value.trim() }),
+        });
+        document.querySelector("#pin-status").textContent = response.ok ? "" : "Fel pinkod";
+        if (response.ok) show();
+      });
+      document.querySelector("#alarm-cancel").addEventListener("click", () => { document.querySelector("#modal").hidden = true; });
+      document.querySelector("#alarm-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!alarmTarget) return;
+        const ok = await act({
+          action: "alarm",
+          entity_id: alarmTarget.entity.entity_id,
+          mode: alarmTarget.mode,
+          pin: document.querySelector("#alarm-pin").value,
+          code: document.querySelector("#alarm-code").value,
+        });
+        document.querySelector("#alarm-status").textContent = ok ? "" : "Pinkoden stämmer inte";
+        if (ok) document.querySelector("#modal").hidden = true;
       });
 
       async function boot() {
-        const info = await session();
-        if (!info) {
+        const response = await fetch("/api/session", { credentials: "same-origin" });
+        if (response.status === 401) {
           gate.hidden = false;
-          stage.hidden = true;
+          app.hidden = true;
           return;
         }
-        gate.hidden = true;
         show();
       }
       boot();

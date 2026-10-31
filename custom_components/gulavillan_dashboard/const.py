@@ -10,3 +10,31 @@ COOKIE = "gulavillan_access"
 ISSUE_PORT = "port_in_use"
 
 DATA_SERVER = f"{DOMAIN}_server"
+
+OPT_VILLA_OUTDOOR = "villa_outdoor"
+OPT_VILLA_INDOOR = "villa_indoor"
+OPT_VILLA_HUMIDITY = "villa_humidity"
+OPT_VILLA_CLIMATE = "villa_climate"
+OPT_VILLA_DOOR = "villa_door"
+OPT_VILLA_LIGHTS = "villa_lights"
+OPT_LIGHT_SWITCHES = "light_switches"
+OPT_POWER = "power_sensor"
+OPT_ENERGY = "energy_sensor"
+OPT_PRICE = "price_sensor"
+OPT_CHARGERS = "charger_entities"
+
+SINGLE_OPTIONS = (
+    OPT_VILLA_OUTDOOR,
+    OPT_VILLA_INDOOR,
+    OPT_VILLA_HUMIDITY,
+    OPT_VILLA_CLIMATE,
+    OPT_VILLA_DOOR,
+    OPT_POWER,
+    OPT_ENERGY,
+    OPT_PRICE,
+)
+MULTI_OPTIONS = (
+    OPT_VILLA_LIGHTS,
+    OPT_LIGHT_SWITCHES,
+    OPT_CHARGERS,
+)

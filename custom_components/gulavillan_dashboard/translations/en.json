@@ -37,13 +37,35 @@
       "init": {
         "data": {
           "pin": "PIN (optional)",
-          "port": "Port"
+          "port": "Port",
+          "villa_outdoor": "Outdoor temperature",
+          "villa_indoor": "Indoor temperature",
+          "villa_humidity": "Humidity",
+          "villa_climate": "Climate",
+          "villa_door": "Door",
+          "villa_lights": "Lights on the house",
+          "light_switches": "Switches that are lights",
+          "power_sensor": "Power right now",
+          "energy_sensor": "Energy today",
+          "price_sensor": "Electricity price",
+          "charger_entities": "Charger"
         },
         "data_description": {
           "pin": "If set, the page asks for this PIN. Leave it empty on a trusted network.",
-          "port": "The page moves to this port as soon as you save. Home Assistant does not need a restart."
+          "port": "The page moves to this port as soon as you save. Home Assistant does not need a restart.",
+          "villa_outdoor": "Sensor on the villa's outdoor number. Empty lets the page choose.",
+          "villa_indoor": "Sensor on the villa's indoor number. Empty lets the page choose.",
+          "villa_humidity": "Sensor on the villa. Empty lets the page choose.",
+          "villa_climate": "Climate entity used when the indoor sensor has no value.",
+          "villa_door": "Door sensor drawn on the villa. Empty lets the page choose.",
+          "villa_lights": "Order is the windows, left to right, then the porch lamp.",
+          "light_switches": "Switches to show and toggle together with lights.",
+          "power_sensor": "Whole-home power. Empty lets the page choose.",
+          "energy_sensor": "A sensor that already shows today's energy, such as a utility meter.",
+          "price_sensor": "Price per kWh. Empty lets the page choose a sensor with that unit.",
+          "charger_entities": "Extra charger entities. Known charger integrations are included automatically."
         },
-        "description": "The page is currently on port {port}.",
+        "description": "The page is on port {port}. Entity fields can stay empty; the page then chooses from areas and device types.",
         "title": "Gulavillan"
       }
     }
