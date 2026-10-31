@@ -1,0 +1,9 @@
+frontend/node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.coverage
+htmlcov/
+*.egg-info/
+.DS_Store

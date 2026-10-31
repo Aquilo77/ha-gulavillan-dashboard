@@ -1,0 +1,6 @@
+{
+  "name": "Gulavillan Dashboard",
+  "hide_default_branch": false,
+  "homeassistant": "2026.10.0",
+  "render_readme": true
+}

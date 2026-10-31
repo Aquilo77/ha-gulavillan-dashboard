@@ -1,0 +1,50 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Gulavillan är redan tillagd. Det räcker med en instans."
+    },
+    "error": {
+      "invalid_icon": "Använd en Material Design-ikon, till exempel mdi:home-variant.",
+      "invalid_title": "Titeln behöver vara 1–40 tecken."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "require_admin": "Bara administratörer",
+          "sidebar_icon": "Ikon i sidomenyn",
+          "sidebar_title": "Titel i sidomenyn"
+        },
+        "data_description": {
+          "require_admin": "Dölj panelen för användare som inte är administratörer.",
+          "sidebar_icon": "Material Design-ikon, till exempel mdi:home-variant.",
+          "sidebar_title": "Namnet som visas i sidomenyn."
+        },
+        "description": "Lägger till en fri dashboard i sidomenyn. Layouten sparas i Home Assistant.",
+        "title": "Gulavillan"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "invalid_icon": "Använd en Material Design-ikon, till exempel mdi:home-variant.",
+      "invalid_title": "Titeln behöver vara 1–40 tecken."
+    },
+    "step": {
+      "init": {
+        "data": {
+          "require_admin": "Bara administratörer",
+          "sidebar_icon": "Ikon i sidomenyn",
+          "sidebar_title": "Titel i sidomenyn"
+        },
+        "data_description": {
+          "require_admin": "Dölj panelen för användare som inte är administratörer.",
+          "sidebar_icon": "Material Design-ikon, till exempel mdi:home-variant.",
+          "sidebar_title": "Namnet som visas i sidomenyn."
+        },
+        "description": "De här inställningarna ändrar sidomenyn. Själva layouten redigeras i panelen.",
+        "title": "Gulavillan"
+      }
+    }
+  },
+  "title": "Gulavillan"
+}

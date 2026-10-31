@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "language": "sv",
+  "theme": "auto",
+  "gridColumns": 24,
+  "pages": [
+    {
+      "id": "hem",
+      "title": "Hem",
+      "icon": "mdi:home-variant",
+      "widgets": [
+        {
+          "id": "klocka_hem",
+          "type": "clock",
+          "x": 0,
+          "y": 0,
+          "w": 8,
+          "h": 5,
+          "style": { "fontSize": 58 },
+          "config": { "mode": "both" }
+        },
+        {
+          "id": "titel_hem",
+          "type": "text",
+          "x": 8,
+          "y": 0,
+          "w": 16,
+          "h": 2,
+          "style": { "fontSize": 40 },
+          "config": { "text": "Gulavillan", "align": "left" }
+        },
+        {
+          "id": "intro_hem",
+          "type": "markdown",
+          "x": 8,
+          "y": 2,
+          "w": 16,
+          "h": 3,
+          "style": {},
+          "config": {
+            "content": "Fri layout för vardagsrum, kök och entré.\n\nDra widgets i redigeringsläget. Exemplet använder påhittade entiteter.",
+            "html": false
+          }
+        },
+        {
+          "id": "ljus_vardagsrum",
+          "type": "light",
+          "x": 0,
+          "y": 5,
+          "w": 8,
+          "h": 5,
+          "style": { "icon": "mdi:floor-lamp" },
+          "config": { "entity_id": "light.vardagsrum", "name": "Vardagsrum", "show_brightness": true }
+        },
+        {
+          "id": "ljus_kok",
+          "type": "light",
+          "x": 8,
+          "y": 5,
+          "w": 8,
+          "h": 5,
+          "style": { "icon": "mdi:ceiling-light" },
+          "config": { "entity_id": "light.kok", "name": "Kök", "show_brightness": true }
+        },
+        {
+          "id": "ljus_hall",
+          "type": "entity",
+          "x": 16,
+          "y": 5,
+          "w": 8,
+          "h": 5,
+          "style": { "icon": "mdi:wall-sconce" },
+          "config": { "entity_id": "light.hall", "name": "Hall", "show_toggle": true }
+        },
+        {
+          "id": "temp_ute",
+          "type": "sensor",
+          "x": 0,
+          "y": 10,
+          "w": 8,
+          "h": 5,
+          "style": { "icon": "mdi:thermometer" },
+          "config": { "entity_id": "sensor.temperatur_ute", "name": "Ute", "hours": 24, "decimals": 1 }
+        },
+        {
+          "id": "fukt",
+          "type": "sensor",
+          "x": 8,
+          "y": 10,
+          "w": 8,
+          "h": 5,
+          "style": { "icon": "mdi:water-percent" },
+          "config": { "entity_id": "sensor.luftfuktighet_vardagsrum", "name": "Luftfuktighet", "hours": 24, "decimals": 0 }
+        },
+        {
+          "id": "entre",
+          "type": "image",
+          "x": 16,
+          "y": 10,
+          "w": 8,
+          "h": 5,
+          "style": {},
+          "config": { "source": "entity", "entity_id": "camera.entre", "url": "", "fit": "cover", "refresh": 15 }
+        },
+        {
+          "id": "grupp_hem",
+          "type": "group",
+          "x": 0,
+          "y": 15,
+          "w": 12,
+          "h": 7,
+          "style": {},
+          "config": {
+            "name": "Snabbkoll",
+            "show_toggle": true,
+            "entity_ids": ["light.vardagsrum", "light.kok", "switch.utelampor", "binary_sensor.ytterdorr", "fan.badrum"]
+          }
+        },
+        {
+          "id": "klimat_hem",
+          "type": "climate",
+          "x": 12,
+          "y": 15,
+          "w": 8,
+          "h": 7,
+          "style": { "icon": "mdi:thermostat" },
+          "config": { "entity_id": "climate.vardagsrum", "name": "Vardagsrum", "step": 0.5 }
+        },
+        {
+          "id": "natt",
+          "type": "button",
+          "x": 20,
+          "y": 15,
+          "w": 4,
+          "h": 4,
+          "style": { "icon": "mdi:weather-night" },
+          "config": {
+            "label": "God natt",
+            "domain": "script",
+            "service": "turn_on",
+            "entity_id": "script.god_natt",
+            "data": "",
+            "confirm": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "klimat",
+      "title": "Klimat",
+      "icon": "mdi:thermostat",
+      "widgets": [
+        {
+          "id": "klimat_stor",
+          "type": "climate",
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 8,
+          "style": { "fontSize": 28 },
+          "config": { "entity_id": "climate.vardagsrum", "name": "Vardagsrum", "step": 0.5 }
+        },
+        {
+          "id": "ute_klimat",
+          "type": "sensor",
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 8,
+          "style": { "fontSize": 28, "icon": "mdi:thermometer" },
+          "config": { "entity_id": "sensor.temperatur_ute", "name": "Ute", "hours": 48, "decimals": 1 }
+        }
+      ]
+    }
+  ]
+}

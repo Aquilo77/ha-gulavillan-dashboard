@@ -1,0 +1,50 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Gulavillan is already set up. Only one instance is needed."
+    },
+    "error": {
+      "invalid_icon": "Use a Material Design icon, for example mdi:home-variant.",
+      "invalid_title": "The title needs to be 1–40 characters."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "require_admin": "Administrators only",
+          "sidebar_icon": "Sidebar icon",
+          "sidebar_title": "Sidebar title"
+        },
+        "data_description": {
+          "require_admin": "Hide the panel from users who are not administrators.",
+          "sidebar_icon": "Material Design icon, for example mdi:home-variant.",
+          "sidebar_title": "Name shown in the sidebar."
+        },
+        "description": "Adds a free-form dashboard to the sidebar. The layout is stored in Home Assistant.",
+        "title": "Gulavillan"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "invalid_icon": "Use a Material Design icon, for example mdi:home-variant.",
+      "invalid_title": "The title needs to be 1–40 characters."
+    },
+    "step": {
+      "init": {
+        "data": {
+          "require_admin": "Administrators only",
+          "sidebar_icon": "Sidebar icon",
+          "sidebar_title": "Sidebar title"
+        },
+        "data_description": {
+          "require_admin": "Hide the panel from users who are not administrators.",
+          "sidebar_icon": "Material Design icon, for example mdi:home-variant.",
+          "sidebar_title": "Name shown in the sidebar."
+        },
+        "description": "These settings change the sidebar entry. The dashboard layout is edited in the panel.",
+        "title": "Gulavillan"
+      }
+    }
+  },
+  "title": "Gulavillan"
+}
