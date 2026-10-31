@@ -13,6 +13,7 @@ def _entry(port: int, pin: str = "") -> MockConfigEntry:
     return MockConfigEntry(
         domain=DOMAIN,
         data={"port": port, "pin": pin},
+        options={"legacy_server": True},
         title=f"Gulavillan ({port})",
     )
 

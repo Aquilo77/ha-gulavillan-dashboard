@@ -10,14 +10,12 @@
     "step": {
       "user": {
         "data": {
-          "pin": "PIN (optional)",
-          "port": "Port"
+          "pin": "Alarm PIN (optional)"
         },
         "data_description": {
-          "pin": "If set, the page asks for this PIN. Leave it empty on a trusted network.",
-          "port": "The page is served on this port, not on Home Assistant's usual port."
+          "pin": "If set, the page asks for this PIN. Leave it empty on a trusted network."
         },
-        "description": "Serves your SVG page on its own port. You can change the port later from the integration page.",
+        "description": "Adds Gulavillan to the sidebar. You sign in with your normal Home Assistant account. A PIN here is only asked again when arming or disarming the alarm.",
         "title": "Gulavillan"
       }
     }
@@ -48,7 +46,11 @@
           "power_sensor": "Power right now",
           "energy_sensor": "Energy today",
           "price_sensor": "Electricity price",
-          "charger_entities": "Charger"
+          "charger_entities": "Charger",
+          "sidebar_title": "Sidebar title",
+          "sidebar_icon": "Sidebar icon",
+          "panel_admin_only": "Administrators only",
+          "legacy_server": "Separate port"
         },
         "data_description": {
           "pin": "If set, the page asks for this PIN. Leave it empty on a trusted network.",
@@ -63,12 +65,32 @@
           "power_sensor": "Whole-home power. Empty lets the page choose.",
           "energy_sensor": "A sensor that already shows today's energy, such as a utility meter.",
           "price_sensor": "Price per kWh. Empty lets the page choose a sensor with that unit.",
-          "charger_entities": "Extra charger entities. Known charger integrations are included automatically."
+          "charger_entities": "Extra charger entities. Known charger integrations are included automatically.",
+          "sidebar_title": "Name shown in the Home Assistant sidebar.",
+          "sidebar_icon": "Icon shown next to the sidebar title.",
+          "panel_admin_only": "Hide the sidebar page from users who are not administrators.",
+          "legacy_server": "Also serve the page on its own port. Leave this off. It is only for an old kiosk and will be removed."
         },
-        "description": "The page is on port {port}. Entity fields can stay empty; the page then chooses from areas and device types.",
+        "description": "The page is in the sidebar. The separate port stays off unless you turn it on below. Do not use Home Assistant's own port.",
         "title": "Gulavillan"
       }
     }
   },
-  "title": "Gulavillan"
+  "title": "Gulavillan",
+  "services": {
+    "update_frontend": {
+      "name": "Update page",
+      "description": "Download the Gulavillan page from GitHub into /config/www/gulavillan. No restart is needed.",
+      "fields": {
+        "ref": {
+          "name": "Branch or tag",
+          "description": "Optional git ref. Leave empty to use the latest release."
+        }
+      }
+    },
+    "rollback_frontend": {
+      "name": "Restore previous page",
+      "description": "Put back the previous Gulavillan page. No restart is needed."
+    }
+  }
 }

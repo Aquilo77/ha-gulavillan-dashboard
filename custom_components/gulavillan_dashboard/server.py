@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import hmac
 import logging
 from datetime import timedelta
@@ -16,6 +15,8 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.util import dt as dt_util
 
+from .access import access_token as _access_token
+from .access import pin_matches
 from .catalog import async_build_catalog, build_catalog, is_visible, public_state
 from .const import COOKIE, DEFAULT_PORT, DOMAIN, ISSUE_PORT
 
@@ -42,8 +43,6 @@ def entry_settings(entry: Any) -> dict[str, Any]:
     return {**merged, "port": port, "pin": str(merged.get("pin") or "").strip()}
 
 
-def _access_token(entry_id: str, pin: str) -> str:
-    return hashlib.sha256(f"{entry_id}:{pin}".encode()).hexdigest()
 
 
 def _merged(entry: Any) -> dict[str, Any]:
@@ -251,12 +250,7 @@ class PageServer:
         return None
 
     def _pin_matches(self, submitted: str) -> bool:
-        if not self.pin:
-            return False
-        given = _access_token(self.entry.entry_id, submitted.strip())
-        if len(given) != len(self.token()):
-            return False
-        return hmac.compare_digest(given, self.token())
+        return pin_matches(self.entry.entry_id, self.pin, submitted)
 
     async def _call(self, domain: str, service: str, data: dict[str, Any]) -> web.Response:
         try:

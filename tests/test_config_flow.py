@@ -10,30 +10,31 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.gulavillan_dashboard.const import DOMAIN
 
 
-async def test_user_chooses_port(hass: HomeAssistant, socket_enabled: None) -> None:
-    """The page port is chosen in the UI."""
+async def test_user_adds_the_sidebar_page(hass: HomeAssistant) -> None:
+    """Setup adds the sidebar page. The separate port stays off."""
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
     assert result["type"] is FlowResultType.FORM
 
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        {"port": 18765, "pin": ""},
-    )
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"pin": ""})
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["data"]["port"] == 18765
-    assert result["title"] == "Gulavillan (18765)"
+    assert result["title"] == "Gulavillan"
     await hass.async_block_till_done()
 
 
-async def test_rejects_home_assistant_port(hass: HomeAssistant) -> None:
-    """The page cannot take Home Assistant's own port."""
-    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
-    result = await hass.config_entries.flow.async_configure(
+async def test_rejects_home_assistant_port(hass: HomeAssistant, socket_enabled: None) -> None:
+    """The legacy port cannot take Home Assistant's own port."""
+    entry = MockConfigEntry(domain=DOMAIN, data={"port": 18764, "pin": ""}, title="Gulavillan")
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
         result["flow_id"],
-        {"port": 8123, "pin": ""},
+        {"port": 8123, "pin": "", "legacy_server": True},
     )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"]["port"] == "invalid_port"
+    await hass.config_entries.async_unload(entry.entry_id)
 
 
 async def test_options_change_port(hass: HomeAssistant, socket_enabled: None) -> None:
