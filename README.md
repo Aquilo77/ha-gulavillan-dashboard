@@ -28,7 +28,7 @@ En flik visas bara om det finns något att visa.
 
 | Flik | Innehåll |
 | --- | --- |
-| Hem | Villan. Klocka, ute, inne, luftfuktighet och dygnets graf sitter på huset. Fönster och lampan vid dörren tänder och släcker. |
+| Hem | Isometrisk gul villa. Klocka, ute med graf, inne, luftfuktighet och elpris svävar runt huset. Fönstren tänds av lamporna och går att klicka. Dörren följer dörrsensorn. Status och närvaro ligger längs nederkanten. |
 | Belysning | Lampor per våning och område, med tänd/släck, ljusstyrka och släck allt. Strömbrytare kommer med bara om du valt dem. |
 | Klimat | Klimat, temperatur, luftfuktighet och ljusstyrka per område, plus ute och väder. |
 | Närvaro | Personer, enhetsspårare, rörelse och när den senast ändrades. |
