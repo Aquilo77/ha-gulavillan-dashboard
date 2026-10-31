@@ -53,3 +53,27 @@ async def test_options_change_port(hass: HomeAssistant, socket_enabled: None) ->
     assert entry.title == "Gulavillan (18767)"
     assert entry.options["port"] == 18767
     await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_options_store_entity_picks(hass: HomeAssistant, socket_enabled: None) -> None:
+    """Villa bindings and light switches are chosen in the options flow."""
+    entry = MockConfigEntry(domain=DOMAIN, data={"port": 18768, "pin": ""}, title="Gulavillan (18768)")
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "port": 18768,
+            "pin": "",
+            "villa_outdoor": "sensor.ute",
+            "light_switches": ["switch.lampa"],
+        },
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    assert entry.options["villa_outdoor"] == "sensor.ute"
+    assert entry.options["light_switches"] == ["switch.lampa"]
+    await hass.config_entries.async_unload(entry.entry_id)

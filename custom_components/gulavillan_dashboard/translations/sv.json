@@ -37,13 +37,35 @@
       "init": {
         "data": {
           "pin": "Pinkod (valfri)",
-          "port": "Port"
+          "port": "Port",
+          "villa_outdoor": "Utetemperatur",
+          "villa_indoor": "Innetemperatur",
+          "villa_humidity": "Luftfuktighet",
+          "villa_climate": "Klimat",
+          "villa_door": "Dörr",
+          "villa_lights": "Lampor på huset",
+          "light_switches": "Strömbrytare som är lampor",
+          "power_sensor": "Effekt just nu",
+          "energy_sensor": "Energi idag",
+          "price_sensor": "Elpris",
+          "charger_entities": "Laddbox"
         },
         "data_description": {
           "pin": "Om du fyller i en kod frågar sidan efter den. Lämna tomt i ett nätverk du litar på.",
-          "port": "Sidan flyttar till den här porten direkt när du sparar. Home Assistant behöver inte startas om."
+          "port": "Sidan flyttar till den här porten direkt när du sparar. Home Assistant behöver inte startas om.",
+          "villa_outdoor": "Sensor för siffran ute på villan. Tomt så väljer sidan själv.",
+          "villa_indoor": "Sensor för siffran inne på villan. Tomt så väljer sidan själv.",
+          "villa_humidity": "Sensor för villan. Tomt så väljer sidan själv.",
+          "villa_climate": "Klimat som används när innesensorn saknar värde.",
+          "villa_door": "Dörrsensor som ritas på villan. Tomt så väljer sidan själv.",
+          "villa_lights": "Ordningen är fönstren från vänster, sedan lampan vid dörren.",
+          "light_switches": "Strömbrytare som ska visas och tändas tillsammans med lampor.",
+          "power_sensor": "Hela husets effekt. Tomt så väljer sidan själv.",
+          "energy_sensor": "En sensor som redan visar dagens energi, till exempel en utility meter.",
+          "price_sensor": "Pris per kWh. Tomt så väljer sidan en sensor med den enheten.",
+          "charger_entities": "Extra entiteter för laddboxen. Kända laddbox-integrationer tas med automatiskt."
         },
-        "description": "Sidan ligger just nu på port {port}.",
+        "description": "Sidan ligger på port {port}. Lämna entitetsfälten tomma om sidan ska välja själv utifrån områden och typ.",
         "title": "Gulavillan"
       }
     }
