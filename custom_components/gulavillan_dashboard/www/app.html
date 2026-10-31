@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gulavillan</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #10151c;
+        --card: #1b2430;
+        --text: #f4f0e8;
+        --muted: #b3aa9c;
+        --accent: #e0b15a;
+        --line: rgba(255, 255, 255, 0.08);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+      button, input, textarea { font: inherit; color: inherit; }
+      a { color: var(--accent); }
+      #stage { width: 100vw; height: 100vh; display: grid; place-items: center; }
+      #stage svg { width: 100vw; height: 100vh; }
+      .edit-link {
+        position: fixed; top: 16px; right: 16px; z-index: 2;
+        background: rgba(16, 21, 28, 0.72); color: var(--text);
+        border: 1px solid var(--line); border-radius: 999px;
+        padding: 8px 14px; text-decoration: none;
+      }
+      #gate, .editor { min-height: 100%; }
+      #gate { display: grid; place-items: center; }
+      .card {
+        width: min(420px, calc(100% - 32px));
+        background: var(--card); border: 1px solid var(--line);
+        border-radius: 20px; padding: 24px;
+      }
+      .card h1 { margin: 0 0 8px; letter-spacing: -0.03em; }
+      .card p { color: var(--muted); }
+      input, textarea {
+        width: 100%; border-radius: 12px; border: 1px solid var(--line);
+        background: #10151c; padding: 12px;
+      }
+      textarea { min-height: 280px; resize: vertical; font-family: ui-monospace, monospace; font-size: 13px; }
+      button.primary, .edit-link.primary {
+        background: var(--accent); color: #1c1408; border: 0; border-radius: 12px;
+        padding: 12px 16px; cursor: pointer; font-weight: 650;
+      }
+      button.ghost {
+        background: transparent; border: 1px solid var(--line); border-radius: 12px;
+        padding: 10px 14px; cursor: pointer;
+      }
+      .editor { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: 100vh; }
+      aside { border-right: 1px solid var(--line); padding: 16px; overflow: auto; }
+      main.work { padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .entities { max-height: 46vh; overflow: auto; display: flex; flex-direction: column; }
+      .entities button {
+        text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line);
+        padding: 8px 4px; cursor: pointer;
+      }
+      .entities small { display: block; color: var(--muted); }
+      #preview { background: #0c1016; border-radius: 16px; min-height: 320px; overflow: hidden; border: 1px solid var(--line); }
+      #preview svg { width: 100%; height: 420px; }
+      .status { color: var(--muted); min-height: 1.2em; }
+      @media (max-width: 800px) {
+        .editor { grid-template-columns: 1fr; }
+        aside { border-right: 0; border-bottom: 1px solid var(--line); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gate" hidden>
+      <form class="card" id="pin-form">
+        <h1>Gulavillan</h1>
+        <p>Sidan är låst med en pinkod som du valt i Home Assistant.</p>
+        <input id="pin" type="password" autocomplete="current-password" placeholder="Pinkod" />
+        <p class="status" id="pin-status"></p>
+        <button class="primary" type="submit">Öppna</button>
+      </form>
+    </div>
+    <div id="app" hidden></div>
+    <script>
+      const ON = new Set(["on", "open", "unlocked", "home", "heat", "cool", "heat_cool", "dry", "fan_only", "playing"]);
+      const LABELS = { on: "På", off: "Av", unavailable: "Otillgänglig", unknown: "Okänt", heat: "Värme", cool: "Kyla", open: "Öppen", closed: "Stängd" };
+      const editing = location.pathname === "/edit";
+      let states = {};
+      let socket;
+      let design = "";
+
+      const app = document.querySelector("#app");
+      const gate = document.querySelector("#gate");
+
+      async function session() {
+        const response = await fetch("/api/session");
+        if (response.status === 401) return null;
+        return response.json();
+      }
+
+      async function login(pin) {
+        const response = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin }),
+        });
+        return response.ok;
+      }
+
+      function formatClock() {
+        return new Intl.DateTimeFormat("sv-SE", { hour: "2-digit", minute: "2-digit" }).format(new Date());
+      }
+      function formatDate() {
+        return new Intl.DateTimeFormat("sv-SE", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+      }
+
+      function textOf(state, el) {
+        const widget = el.dataset.widget;
+        if (widget === "clock") return formatClock();
+        if (widget === "date") return formatDate();
+        if (widget === "name") return state?.attributes?.friendly_name || el.textContent || "";
+        if (widget === "unit") return state?.attributes?.unit_of_measurement || "";
+        const raw = state?.state ?? "–";
+        if (widget === "label") return LABELS[raw] || raw;
+        if (el.dataset.decimals != null && el.dataset.decimals !== "") {
+          const number = Number(raw);
+          if (Number.isFinite(number)) {
+            return new Intl.NumberFormat("sv-SE", {
+              minimumFractionDigits: Number(el.dataset.decimals),
+              maximumFractionDigits: Number(el.dataset.decimals),
+            }).format(number);
+          }
+        }
+        return raw;
+      }
+
+      function apply(root) {
+        root.querySelectorAll("[data-widget]").forEach((el) => {
+          const widget = el.dataset.widget;
+          const state = states[el.dataset.entity];
+          if (widget === "value" || widget === "label" || widget === "name" || widget === "unit" || widget === "clock" || widget === "date") {
+            el.textContent = textOf(state, el);
+          }
+          if (widget === "state-fill") {
+            const on = state && ON.has(state.state);
+            el.setAttribute("fill", on ? (el.dataset.on || "#e0b15a") : (el.dataset.off || "#334155"));
+          }
+          if (widget === "bar") {
+            if (!el.dataset.fullWidth) el.dataset.fullWidth = el.getAttribute("width") || "100";
+            const min = Number(el.dataset.min || 0);
+            const max = Number(el.dataset.max || 100);
+            const value = Number(state?.state);
+            const span = max - min || 1;
+            const ratio = Number.isFinite(value) ? Math.min(1, Math.max(0, (value - min) / span)) : 0;
+            el.setAttribute("width", String(Number(el.dataset.fullWidth) * ratio));
+          }
+        });
+      }
+
+      function mount(svgText, target) {
+        const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
+        const svg = parsed.querySelector("svg");
+        target.replaceChildren();
+        if (!svg || parsed.querySelector("parsererror")) {
+          target.textContent = "SVG:n kunde inte läsas.";
+          return null;
+        }
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+        target.append(svg);
+        apply(svg);
+        drawAll(svg);
+        return svg;
+      }
+
+      async function history(entity, hours) {
+        const response = await fetch(`/api/history?entity_id=${encodeURIComponent(entity)}&hours=${hours}`);
+        if (!response.ok) return [];
+        const body = await response.json();
+        return body.points || [];
+      }
+
+      async function drawAll(svg) {
+        const plots = [...svg.querySelectorAll('[data-widget="sparkline"]')];
+        await Promise.all(plots.map(async (el, index) => {
+          const entity = el.dataset.entity;
+          if (!entity) return;
+          const hours = Number(el.dataset.hours || 24);
+          const points = await history(entity, hours);
+          const live = Number(states[entity]?.state);
+          if (Number.isFinite(live)) points.push(live);
+          const x = Number(el.getAttribute("x") || 0);
+          const y = Number(el.getAttribute("y") || 0);
+          const width = Number(el.getAttribute("width") || 200);
+          const height = Number(el.getAttribute("height") || 80);
+          let line = svg.querySelector(`polyline[data-spark="${index}"]`);
+          if (!line) {
+            line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+            line.setAttribute("fill", "none");
+            line.setAttribute("stroke", el.dataset.stroke || "#e0b15a");
+            line.setAttribute("stroke-width", "3");
+            line.setAttribute("stroke-linejoin", "round");
+            line.setAttribute("stroke-linecap", "round");
+            line.dataset.spark = String(index);
+            el.parentNode.append(line);
+          }
+          if (points.length < 2) return;
+          const min = Math.min(...points);
+          const max = Math.max(...points);
+          const span = max - min || 1;
+          const step = width / (points.length - 1);
+          line.setAttribute("points", points.map((value, i) => {
+            const px = x + i * step;
+            const py = y + height - ((value - min) / span) * (height - 12) - 6;
+            return `${px.toFixed(1)},${py.toFixed(1)}`;
+          }).join(" "));
+        }));
+      }
+
+      function connect(rootGetter) {
+        const protocol = location.protocol === "https:" ? "wss" : "ws";
+        socket = new WebSocket(`${protocol}://${location.host}/api/live`);
+        socket.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === "snapshot") states = message.states || {};
+          if (message.type === "state") states[message.entity_id] = message.state;
+          const root = rootGetter();
+          if (root) {
+            apply(root);
+            if (message.type === "snapshot") drawAll(root);
+          }
+        };
+        socket.onclose = () => setTimeout(() => connect(rootGetter), 2000);
+      }
+
+      function view(svg) {
+        app.hidden = false;
+        app.innerHTML = '<a class="edit-link" href="/edit">Redigera</a><div id="stage"></div>';
+        const stage = app.querySelector("#stage");
+        mount(svg, stage);
+        setInterval(() => apply(stage), 1000);
+        connect(() => stage.querySelector("svg"));
+      }
+
+      async function editor(svg) {
+        app.hidden = false;
+        const entities = await (await fetch("/api/entities")).json();
+        app.innerHTML = `
+          <div class="editor">
+            <aside>
+              <h1>Redigera</h1>
+              <p class="status">Klistra in en SVG som en AI ritat. data-entity kopplar formen till Home Assistant.</p>
+              <div class="row">
+                <a href="/">Visa sidan</a>
+                <button class="ghost" id="copy" type="button">Kopiera AI-instruktion</button>
+              </div>
+              <input id="search" placeholder="Sök entiteter" />
+              <div class="entities" id="entities"></div>
+            </aside>
+            <main class="work">
+              <textarea id="svg" spellcheck="false"></textarea>
+              <div class="row">
+                <button class="primary" id="save" type="button">Spara</button>
+                <button class="ghost" id="refresh" type="button">Förhandsvisa</button>
+                <span class="status" id="status"></span>
+              </div>
+              <div id="preview"></div>
+            </main>
+          </div>`;
+        const area = app.querySelector("#svg");
+        const preview = app.querySelector("#preview");
+        const list = app.querySelector("#entities");
+        area.value = svg;
+        const paint = () => mount(area.value, preview);
+        paint();
+        connect(() => preview.querySelector("svg"));
+        setInterval(() => {
+          const root = preview.querySelector("svg");
+          if (root) apply(root);
+        }, 1000);
+
+        function renderList() {
+          const query = app.querySelector("#search").value.trim().toLowerCase();
+          const rows = (entities.entities || []).filter((item) => {
+            return !query || item.entity_id.includes(query) || String(item.name).toLowerCase().includes(query);
+          }).slice(0, 80);
+          list.replaceChildren();
+          rows.forEach((item) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            const name = document.createElement("div");
+            name.textContent = item.name;
+            const small = document.createElement("small");
+            small.textContent = item.entity_id;
+            button.append(name, small);
+            button.onclick = () => navigator.clipboard.writeText(item.entity_id);
+            list.append(button);
+          });
+        }
+        renderList();
+        app.querySelector("#search").addEventListener("input", renderList);
+        app.querySelector("#refresh").onclick = paint;
+        app.querySelector("#save").onclick = async () => {
+          const status = app.querySelector("#status");
+          const response = await fetch("/api/design", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ svg: area.value }),
+          });
+          const body = await response.json();
+          if (!response.ok) {
+            status.textContent = body.error || "Kunde inte spara";
+            return;
+          }
+          area.value = body.svg;
+          paint();
+          status.textContent = "Sparat";
+        };
+        app.querySelector("#copy").onclick = async () => {
+          const sample = (entities.entities || []).slice(0, 60).map((item) => `${item.entity_id} (${item.name})`).join("\n");
+          const prompt = `Rita en enda SVG för en väggskärm, viewBox 0 0 1920 1080, mörk bakgrund. Ingen skriptkod, inga externa bilder.\n\nKoppla data så här:\n- <text data-entity="sensor.exempel" data-widget="value" data-decimals="1">–</text>\n- data-widget="unit" enhet, data-widget="name" namn, data-widget="label" På/Av\n- data-widget="clock" och data-widget="date"\n- <rect data-entity="sensor.exempel" data-widget="sparkline" data-hours="24" x=".." y=".." width=".." height=".."/>\n- data-widget="state-fill" data-on="#e0b15a" data-off="#334155" på en form\n- data-widget="bar" data-min="0" data-max="100" på en rect vars bredd ska fyllas\n\nEntiteter:\n${sample}`;
+          await navigator.clipboard.writeText(prompt);
+          app.querySelector("#status").textContent = "AI-instruktionen är kopierad";
+        };
+      }
+
+      document.querySelector("#pin-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const ok = await login(document.querySelector("#pin").value);
+        document.querySelector("#pin-status").textContent = ok ? "" : "Fel pinkod";
+        if (ok) boot();
+      });
+
+      async function boot() {
+        const info = await session();
+        if (!info) {
+          gate.hidden = false;
+          app.hidden = true;
+          return;
+        }
+        gate.hidden = true;
+        const body = await (await fetch("/api/design")).json();
+        design = body.svg;
+        if (editing) editor(design);
+        else view(design);
+      }
+      boot();
+    </script>
+  </body>
+</html>

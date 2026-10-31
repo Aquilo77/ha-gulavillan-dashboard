@@ -13,11 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
       - name: Tag matches the manifest
         run: |
           tag="${GITHUB_REF_NAME#v}"
@@ -26,15 +21,12 @@ jobs:
             echo "Tag ${tag} does not match manifest ${manifest}"
             exit 1
           fi
-      - name: Build the panel
-        working-directory: frontend
-        run: npm ci && npm run build
       - name: Zip the integration
         run: |
           cd custom_components/gulavillan_dashboard
           zip -r "${GITHUB_WORKSPACE}/gulavillan_dashboard.zip" .
           unzip -l "${GITHUB_WORKSPACE}/gulavillan_dashboard.zip" | grep -q " manifest.json$"
-          unzip -l "${GITHUB_WORKSPACE}/gulavillan_dashboard.zip" | grep -q " frontend/gulavillan-panel.js$"
+          unzip -l "${GITHUB_WORKSPACE}/gulavillan_dashboard.zip" | grep -q " www/app.html$"
       - uses: softprops/action-gh-release@v2
         with:
           files: gulavillan_dashboard.zip

@@ -4,44 +4,46 @@
       "single_instance_allowed": "Gulavillan is already set up. Only one instance is needed."
     },
     "error": {
-      "invalid_icon": "Use a Material Design icon, for example mdi:home-variant.",
-      "invalid_title": "The title needs to be 1–40 characters."
+      "invalid_port": "Choose a port from 1024 to 65535, other than Home Assistant's own port.",
+      "port_in_use": "That port is already in use."
     },
     "step": {
       "user": {
         "data": {
-          "require_admin": "Administrators only",
-          "sidebar_icon": "Sidebar icon",
-          "sidebar_title": "Sidebar title"
+          "pin": "PIN (optional)",
+          "port": "Port"
         },
         "data_description": {
-          "require_admin": "Hide the panel from users who are not administrators.",
-          "sidebar_icon": "Material Design icon, for example mdi:home-variant.",
-          "sidebar_title": "Name shown in the sidebar."
+          "pin": "If set, the page asks for this PIN. Leave it empty on a trusted network.",
+          "port": "The page is served on this port, not on Home Assistant's usual port."
         },
-        "description": "Adds a free-form dashboard to the sidebar. The layout is stored in Home Assistant.",
+        "description": "Serves your SVG page on its own port. You can change the port later from the integration page.",
         "title": "Gulavillan"
       }
     }
   },
+  "issues": {
+    "port_in_use": {
+      "description": "Gulavillan could not listen on port {port}. Open the integration and choose another port.",
+      "title": "The port is in use"
+    }
+  },
   "options": {
     "error": {
-      "invalid_icon": "Use a Material Design icon, for example mdi:home-variant.",
-      "invalid_title": "The title needs to be 1–40 characters."
+      "invalid_port": "Choose a port from 1024 to 65535, other than Home Assistant's own port.",
+      "port_in_use": "That port is already in use."
     },
     "step": {
       "init": {
         "data": {
-          "require_admin": "Administrators only",
-          "sidebar_icon": "Sidebar icon",
-          "sidebar_title": "Sidebar title"
+          "pin": "PIN (optional)",
+          "port": "Port"
         },
         "data_description": {
-          "require_admin": "Hide the panel from users who are not administrators.",
-          "sidebar_icon": "Material Design icon, for example mdi:home-variant.",
-          "sidebar_title": "Name shown in the sidebar."
+          "pin": "If set, the page asks for this PIN. Leave it empty on a trusted network.",
+          "port": "The page moves to this port as soon as you save. Home Assistant does not need a restart."
         },
-        "description": "These settings change the sidebar entry. The dashboard layout is edited in the panel.",
+        "description": "The page is currently on port {port}.",
         "title": "Gulavillan"
       }
     }

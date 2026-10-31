@@ -1,12 +1,12 @@
 {
   "domain": "gulavillan_dashboard",
   "name": "Gulavillan",
-  "after_dependencies": ["frontend", "http", "websocket_api"],
+  "after_dependencies": ["http"],
   "codeowners": ["@Aquilo77"],
   "config_flow": true,
   "documentation": "https://github.com/Aquilo77/ha-gulavillan-dashboard",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/Aquilo77/ha-gulavillan-dashboard/issues",
   "single_config_entry": true,
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

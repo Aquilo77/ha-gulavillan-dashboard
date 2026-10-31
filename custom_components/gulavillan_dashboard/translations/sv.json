@@ -4,44 +4,46 @@
       "single_instance_allowed": "Gulavillan är redan tillagd. Det räcker med en instans."
     },
     "error": {
-      "invalid_icon": "Använd en Material Design-ikon, till exempel mdi:home-variant.",
-      "invalid_title": "Titeln behöver vara 1–40 tecken."
+      "invalid_port": "Välj en port mellan 1024 och 65535, inte Home Assistants egen port.",
+      "port_in_use": "Porten används redan."
     },
     "step": {
       "user": {
         "data": {
-          "require_admin": "Bara administratörer",
-          "sidebar_icon": "Ikon i sidomenyn",
-          "sidebar_title": "Titel i sidomenyn"
+          "pin": "Pinkod (valfri)",
+          "port": "Port"
         },
         "data_description": {
-          "require_admin": "Dölj panelen för användare som inte är administratörer.",
-          "sidebar_icon": "Material Design-ikon, till exempel mdi:home-variant.",
-          "sidebar_title": "Namnet som visas i sidomenyn."
+          "pin": "Om du fyller i en kod frågar sidan efter den. Lämna tomt i ett nätverk du litar på.",
+          "port": "Sidan visas på den här porten, inte på Home Assistants vanliga port."
         },
-        "description": "Lägger till en fri dashboard i sidomenyn. Layouten sparas i Home Assistant.",
+        "description": "Visar din SVG-sida på en egen port. Porten kan bytas senare från integrationens sida.",
         "title": "Gulavillan"
       }
     }
   },
+  "issues": {
+    "port_in_use": {
+      "description": "Gulavillan kunde inte lyssna på port {port}. Öppna integrationen och välj en annan port.",
+      "title": "Porten är upptagen"
+    }
+  },
   "options": {
     "error": {
-      "invalid_icon": "Använd en Material Design-ikon, till exempel mdi:home-variant.",
-      "invalid_title": "Titeln behöver vara 1–40 tecken."
+      "invalid_port": "Välj en port mellan 1024 och 65535, inte Home Assistants egen port.",
+      "port_in_use": "Porten används redan."
     },
     "step": {
       "init": {
         "data": {
-          "require_admin": "Bara administratörer",
-          "sidebar_icon": "Ikon i sidomenyn",
-          "sidebar_title": "Titel i sidomenyn"
+          "pin": "Pinkod (valfri)",
+          "port": "Port"
         },
         "data_description": {
-          "require_admin": "Dölj panelen för användare som inte är administratörer.",
-          "sidebar_icon": "Material Design-ikon, till exempel mdi:home-variant.",
-          "sidebar_title": "Namnet som visas i sidomenyn."
+          "pin": "Om du fyller i en kod frågar sidan efter den. Lämna tomt i ett nätverk du litar på.",
+          "port": "Sidan flyttar till den här porten direkt när du sparar. Home Assistant behöver inte startas om."
         },
-        "description": "De här inställningarna ändrar sidomenyn. Själva layouten redigeras i panelen.",
+        "description": "Sidan ligger just nu på port {port}.",
         "title": "Gulavillan"
       }
     }

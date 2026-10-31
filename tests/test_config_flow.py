@@ -1,4 +1,4 @@
-"""Config flow and options flow."""
+"""Port configuration."""
 
 from __future__ import annotations
 
@@ -7,77 +7,49 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.gulavillan_dashboard.const import DOMAIN, PANEL_URL
+from custom_components.gulavillan_dashboard.const import DOMAIN
 
 
-async def test_user_flow_creates_entry(hass: HomeAssistant) -> None:
-    """A user can add the integration from the UI."""
+async def test_user_chooses_port(hass: HomeAssistant, socket_enabled: None) -> None:
+    """The page port is chosen in the UI."""
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
     assert result["type"] is FlowResultType.FORM
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {
-            "sidebar_title": "Gulavillan",
-            "sidebar_icon": "mdi:home-variant",
-            "require_admin": False,
-        },
+        {"port": 18765, "pin": ""},
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["title"] == "Gulavillan"
-    assert result["data"]["sidebar_icon"] == "mdi:home-variant"
+    assert result["data"]["port"] == 18765
+    assert result["title"] == "Gulavillan (18765)"
     await hass.async_block_till_done()
-    assert PANEL_URL in hass.data["frontend_panels"]
 
 
-async def test_invalid_icon_is_rejected(hass: HomeAssistant) -> None:
-    """Icons have to be Material Design icons."""
+async def test_rejects_home_assistant_port(hass: HomeAssistant) -> None:
+    """The page cannot take Home Assistant's own port."""
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {"sidebar_title": "Gulavillan", "sidebar_icon": "house", "require_admin": False},
+        {"port": 8123, "pin": ""},
     )
     assert result["type"] is FlowResultType.FORM
-    assert result["errors"]["sidebar_icon"] == "invalid_icon"
+    assert result["errors"]["port"] == "invalid_port"
 
 
-async def test_single_instance(hass: HomeAssistant) -> None:
-    """Only one dashboard entry can exist."""
-    MockConfigEntry(domain=DOMAIN, data={"sidebar_title": "Gulavillan"}).add_to_hass(hass)
-    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "single_instance_allowed"
-
-
-async def test_options_update_sidebar(hass: HomeAssistant) -> None:
-    """Options change the sidebar title and reload the panel."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        title="Gulavillan",
-        data={
-            "sidebar_title": "Gulavillan",
-            "sidebar_icon": "mdi:home-variant",
-            "require_admin": False,
-        },
-    )
+async def test_options_change_port(hass: HomeAssistant, socket_enabled: None) -> None:
+    """The port can be changed from the integration page."""
+    entry = MockConfigEntry(domain=DOMAIN, data={"port": 18766, "pin": ""}, title="Gulavillan (18766)")
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    assert result["type"] is FlowResultType.FORM
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
-        {
-            "sidebar_title": "Villan",
-            "sidebar_icon": "mdi:home",
-            "require_admin": True,
-        },
+        {"port": 18767, "pin": "1234"},
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
-
-    panel = hass.data["frontend_panels"][PANEL_URL]
-    assert panel.sidebar_title == "Villan"
-    assert panel.sidebar_icon == "mdi:home"
-    assert panel.require_admin is True
+    assert entry.title == "Gulavillan (18767)"
+    assert entry.options["port"] == 18767
+    await hass.config_entries.async_unload(entry.entry_id)
