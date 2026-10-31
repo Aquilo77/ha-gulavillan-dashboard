@@ -11,6 +11,7 @@
       button, input { font: inherit; color: inherit; }
       #stage { width: 100vw; height: 100vh; }
       #stage svg { width: 100vw; height: 100vh; display: block; }
+      #stage svg [data-action="toggle"] { cursor: pointer; }
       #gate:not([hidden]) { min-height: 100%; display: grid; place-items: center; }
       [hidden] { display: none !important; }
       .card { width: min(420px, calc(100% - 32px)); background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
@@ -94,6 +95,11 @@
             const on = state && ON.has(state.state);
             el.setAttribute("fill", on ? (el.dataset.on || "#e0b15a") : (el.dataset.off || "#334155"));
           }
+          if (widget === "visible-on" || widget === "visible-off") {
+            const on = !!(state && ON.has(state.state));
+            const show = widget === "visible-on" ? on : !on;
+            el.style.display = show ? "" : "none";
+          }
           if (widget === "bar") {
             if (!el.dataset.fullWidth) el.dataset.fullWidth = el.getAttribute("width") || "100";
             const min = Number(el.dataset.min || 0);
@@ -169,6 +175,16 @@
         drawSparks(svg);
         setInterval(() => apply(svg), 1000);
         connect(svg);
+        svg.addEventListener("click", (event) => {
+          const target = event.target.closest("[data-action='toggle']");
+          if (!target?.dataset.entity) return;
+          fetch("/api/action", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ entity_id: target.dataset.entity, action: "toggle" }),
+          });
+        });
       }
 
       document.querySelector("#pin-form").addEventListener("submit", async (event) => {

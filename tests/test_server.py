@@ -33,6 +33,7 @@ async def test_page_is_the_shipped_drawing(hass: HomeAssistant, socket_enabled: 
             body = await response.json()
             assert "sensor.temperatur_ute" in body["svg"]
             assert "data-widget=\"sparkline\"" in body["svg"]
+            assert "data-action=\"toggle\"" in body["svg"]
         async with session.post("http://127.0.0.1:18770/api/design", json={"svg": "<svg></svg>"}) as response:
             assert response.status == 405
         async with session.get("http://127.0.0.1:18770/edit") as response:

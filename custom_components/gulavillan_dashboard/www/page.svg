@@ -1,41 +1,86 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#182230"/>
+      <stop offset="0" stop-color="#243044"/>
       <stop offset="1" stop-color="#10151c"/>
-    </linearGradient>
-    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#f0c56a"/>
-      <stop offset="1" stop-color="#c4923a"/>
     </linearGradient>
   </defs>
   <rect width="1920" height="1080" fill="url(#sky)"/>
-  <circle cx="1560" cy="180" r="70" fill="#e0b15a" opacity="0.9"/>
-  <circle cx="1605" cy="165" r="58" fill="#182230"/>
-  <text x="96" y="118" fill="#e0b15a" font-size="26" font-family="system-ui, sans-serif" letter-spacing="6">GULAVILLAN</text>
-  <text x="96" y="250" fill="#f6f1e7" font-size="128" font-family="system-ui, sans-serif" data-widget="clock">--:--</text>
-  <text x="100" y="312" fill="#b7ad9f" font-size="32" font-family="system-ui, sans-serif" data-widget="date"></text>
-  <text x="96" y="430" fill="#b7ad9f" font-size="22" font-family="system-ui, sans-serif">UTE</text>
-  <text x="96" y="530" fill="#f6f1e7" font-size="88" font-family="system-ui, sans-serif" data-entity="sensor.temperatur_ute" data-widget="value" data-decimals="1">-</text>
-  <text x="330" y="530" fill="#b7ad9f" font-size="36" font-family="system-ui, sans-serif" data-entity="sensor.temperatur_ute" data-widget="unit">&#176;C</text>
-  <rect x="96" y="560" width="460" height="120" rx="16" fill="#1b2430" data-entity="sensor.temperatur_ute" data-widget="sparkline" data-hours="24"/>
-  <text x="640" y="430" fill="#b7ad9f" font-size="22" font-family="system-ui, sans-serif">INOMHUS</text>
-  <text x="640" y="530" fill="#f6f1e7" font-size="88" font-family="system-ui, sans-serif" data-entity="climate.vardagsrum" data-attribute="current_temperature" data-widget="value" data-decimals="1">-</text>
-  <text x="860" y="530" fill="#b7ad9f" font-size="36" font-family="system-ui, sans-serif">&#176;C</text>
-  <text x="640" y="590" fill="#8d8478" font-size="24" font-family="system-ui, sans-serif" data-entity="climate.vardagsrum" data-widget="label">-</text>
-  <text x="1080" y="430" fill="#b7ad9f" font-size="22" font-family="system-ui, sans-serif">LUFTFUKTIGHET</text>
-  <text x="1080" y="530" fill="#f6f1e7" font-size="88" font-family="system-ui, sans-serif" data-entity="sensor.luftfuktighet" data-widget="value" data-decimals="0">-</text>
-  <text x="1260" y="530" fill="#b7ad9f" font-size="36" font-family="system-ui, sans-serif" data-entity="sensor.luftfuktighet" data-widget="unit">%</text>
-  <rect x="1080" y="580" width="280" height="18" rx="9" fill="#1b2430"/>
-  <rect x="1080" y="580" width="280" height="18" rx="9" fill="#e0b15a" data-entity="sensor.luftfuktighet" data-widget="bar" data-min="0" data-max="100"/>
-  <g transform="translate(1180, 680)">
-    <polygon points="40,150 370,150 205,20" fill="url(#roof)"/>
-    <rect x="70" y="150" width="270" height="170" rx="4" fill="#d9c7a4"/>
-    <rect x="175" y="210" width="58" height="110" fill="#1b2430"/>
-    <rect x="100" y="190" width="52" height="40" fill="#334155" data-entity="light.vardagsrum" data-widget="state-fill" data-on="#f6e7b8" data-off="#334155"/>
-    <rect x="258" y="190" width="52" height="40" fill="#334155" data-entity="light.kok" data-widget="state-fill" data-on="#f6e7b8" data-off="#334155"/>
-    <circle cx="300" cy="300" r="10" fill="#334155" data-entity="light.hall" data-widget="state-fill" data-on="#e0b15a" data-off="#334155"/>
+  <ellipse cx="1200" cy="1040" rx="780" ry="70" fill="#1c3a2a"/>
+  <rect x="1088" y="980" width="150" height="70" fill="#c4b49a"/>
+
+  <text x="80" y="110" fill="#e0b15a" font-size="26" font-family="system-ui, sans-serif" letter-spacing="6">GULAVILLAN</text>
+  <text x="80" y="230" fill="#f6f1e7" font-size="112" font-family="system-ui, sans-serif" data-widget="clock">--:--</text>
+  <text x="84" y="286" fill="#b7ad9f" font-size="30" font-family="system-ui, sans-serif" data-widget="date"></text>
+
+  <text x="80" y="390" fill="#b7ad9f" font-size="20" font-family="system-ui, sans-serif">UTE</text>
+  <text x="80" y="470" fill="#f6f1e7" font-size="72" font-family="system-ui, sans-serif" data-entity="sensor.temperatur_ute" data-widget="value" data-decimals="1">-</text>
+  <text x="270" y="470" fill="#b7ad9f" font-size="28" font-family="system-ui, sans-serif" data-entity="sensor.temperatur_ute" data-widget="unit">&#176;C</text>
+  <rect x="80" y="500" width="460" height="110" rx="16" fill="#1b2430" data-entity="sensor.temperatur_ute" data-widget="sparkline" data-hours="24"/>
+
+  <text x="80" y="680" fill="#b7ad9f" font-size="20" font-family="system-ui, sans-serif">INOMHUS</text>
+  <text x="80" y="752" fill="#f6f1e7" font-size="64" font-family="system-ui, sans-serif" data-entity="climate.vardagsrum" data-attribute="current_temperature" data-widget="value" data-decimals="1">-</text>
+  <text x="250" y="752" fill="#b7ad9f" font-size="26" font-family="system-ui, sans-serif">&#176;C</text>
+  <text x="80" y="800" fill="#8d8478" font-size="22" font-family="system-ui, sans-serif" data-entity="climate.vardagsrum" data-widget="label">-</text>
+
+  <text x="80" y="880" fill="#b7ad9f" font-size="20" font-family="system-ui, sans-serif">LUFTFUKTIGHET</text>
+  <text x="80" y="940" fill="#f6f1e7" font-size="48" font-family="system-ui, sans-serif" data-entity="sensor.luftfuktighet" data-widget="value" data-decimals="0">-</text>
+  <text x="180" y="940" fill="#b7ad9f" font-size="24" font-family="system-ui, sans-serif" data-entity="sensor.luftfuktighet" data-widget="unit">%</text>
+  <rect x="280" y="910" width="220" height="16" rx="8" fill="#1b2430"/>
+  <rect x="280" y="910" width="220" height="16" rx="8" fill="#e0b15a" data-entity="sensor.luftfuktighet" data-widget="bar" data-min="0" data-max="100"/>
+
+  <g id="villa">
+    <polygon points="700,360 1220,120 1740,360" fill="#6e4b32"/>
+    <polygon points="760,360 1220,160 1680,360" fill="#8a5a38"/>
+    <rect x="1460" y="150" width="46" height="120" fill="#7a5344"/>
+    <rect x="1448" y="136" width="70" height="22" fill="#5c3d32"/>
+
+    <rect x="820" y="360" width="800" height="250" fill="#f0c14a"/>
+    <rect x="820" y="590" width="800" height="22" fill="#e2b03a"/>
+    <rect x="780" y="612" width="880" height="370" fill="#e6b325"/>
+    <rect x="780" y="950" width="880" height="28" fill="#c9962a"/>
+
+    <g data-entity="light.vardagsrum" data-action="toggle">
+      <rect x="940" y="410" width="150" height="120" fill="#f7f3ea"/>
+      <rect x="952" y="422" width="126" height="96" fill="#334155" data-entity="light.vardagsrum" data-widget="state-fill" data-on="#f8e7a8" data-off="#243044"/>
+      <line x1="1015" y1="422" x2="1015" y2="518" stroke="#f7f3ea" stroke-width="6"/>
+      <line x1="952" y1="470" x2="1078" y2="470" stroke="#f7f3ea" stroke-width="6"/>
+    </g>
+    <g data-entity="light.hall" data-action="toggle">
+      <rect x="1360" y="410" width="150" height="120" fill="#f7f3ea"/>
+      <rect x="1372" y="422" width="126" height="96" fill="#334155" data-entity="light.hall" data-widget="state-fill" data-on="#f8e7a8" data-off="#243044"/>
+      <line x1="1435" y1="422" x2="1435" y2="518" stroke="#f7f3ea" stroke-width="6"/>
+      <line x1="1372" y1="470" x2="1498" y2="470" stroke="#f7f3ea" stroke-width="6"/>
+    </g>
+
+    <g data-entity="light.vardagsrum" data-action="toggle">
+      <rect x="900" y="700" width="170" height="150" fill="#f7f3ea"/>
+      <rect x="912" y="712" width="146" height="126" fill="#334155" data-entity="light.vardagsrum" data-widget="state-fill" data-on="#f8e7a8" data-off="#243044"/>
+      <line x1="985" y1="712" x2="985" y2="838" stroke="#f7f3ea" stroke-width="6"/>
+      <line x1="912" y1="775" x2="1058" y2="775" stroke="#f7f3ea" stroke-width="6"/>
+    </g>
+    <g data-entity="light.kok" data-action="toggle">
+      <rect x="1380" y="700" width="170" height="150" fill="#f7f3ea"/>
+      <rect x="1392" y="712" width="146" height="126" fill="#334155" data-entity="light.kok" data-widget="state-fill" data-on="#f8e7a8" data-off="#243044"/>
+      <line x1="1465" y1="712" x2="1465" y2="838" stroke="#f7f3ea" stroke-width="6"/>
+      <line x1="1392" y1="775" x2="1538" y2="775" stroke="#f7f3ea" stroke-width="6"/>
+    </g>
+
+    <g data-entity="binary_sensor.ytterdorr">
+      <rect x="1168" y="690" width="150" height="260" fill="#f3e2b0"/>
+      <g data-entity="binary_sensor.ytterdorr" data-widget="visible-off">
+        <rect x="1184" y="706" width="118" height="244" fill="#6b422c"/>
+        <circle cx="1280" cy="830" r="6" fill="#e0b15a"/>
+      </g>
+      <g data-entity="binary_sensor.ytterdorr" data-widget="visible-on">
+        <polygon points="1184,706 1230,730 1230,950 1184,950" fill="#6b422c"/>
+        <rect x="1230" y="706" width="72" height="244" fill="#1b2430"/>
+      </g>
+    </g>
+
+    <g data-entity="light.hall" data-action="toggle">
+      <rect x="1330" y="640" width="16" height="36" fill="#5c5148"/>
+      <circle cx="1338" cy="688" r="16" fill="#334155" data-entity="light.hall" data-widget="state-fill" data-on="#e0b15a" data-off="#334155"/>
+    </g>
   </g>
-  <text x="1260" y="1020" fill="#b7ad9f" font-size="22" font-family="system-ui, sans-serif">D&#214;RR</text>
-  <text x="1360" y="1020" fill="#f6f1e7" font-size="22" font-family="system-ui, sans-serif" data-entity="binary_sensor.ytterdorr" data-widget="label">-</text>
 </svg>

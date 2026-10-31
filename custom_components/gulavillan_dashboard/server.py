@@ -98,6 +98,7 @@ class PageServer:
         app.router.add_get("/api/session", self._session)
         app.router.add_post("/api/login", self._login)
         app.router.add_get("/api/design", self._get_design)
+        app.router.add_post("/api/action", self._action)
         app.router.add_get("/api/history", self._history)
         app.router.add_get("/api/live", self._live)
 
@@ -212,6 +213,31 @@ class PageServer:
         if not self.authorized(request):
             return self._deny()
         return web.json_response({"svg": _SVG.read_text(encoding="utf-8")})
+
+    async def _action(self, request: web.Request) -> web.Response:
+        if not self.authorized(request):
+            return self._deny()
+        try:
+            body = await request.json()
+        except ValueError:
+            return web.json_response({"error": "invalid"}, status=400)
+        entity_id = str(body.get("entity_id") or "")
+        domain = entity_id.split(".", 1)[0] if "." in entity_id else ""
+        if body.get("action") != "toggle" or domain not in {
+            "light",
+            "switch",
+            "input_boolean",
+            "fan",
+            "script",
+        }:
+            return web.json_response({"error": "not_toggleable"}, status=400)
+        await self.hass.services.async_call(
+            "homeassistant",
+            "toggle",
+            {"entity_id": entity_id},
+            blocking=False,
+        )
+        return web.json_response({"ok": True})
 
     async def _history(self, request: web.Request) -> web.Response:
         if not self.authorized(request):

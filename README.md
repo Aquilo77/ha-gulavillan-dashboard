@@ -26,7 +26,7 @@ Välj inte Home Assistants egen port (oftast 8123).
 
 Ritningen är `custom_components/gulavillan_dashboard/www/page.svg`. Den ändras här i repot, inte på sidan.
 
-Den första sidan visar klocka, utetemperatur med graf, inomhustemperatur, luftfuktighet, ett hus där fönstren tänds med lampor, och ytterdörrens läge. Den förväntar sig de här entiteterna:
+Sidan är en gul tvåvåningsvilla. Fönster och lampan vid dörren går att klicka och tänder eller släcker lampan. Dörren ritas öppen eller stängd. Den förväntar sig de här entiteterna:
 
 | Entitet | Visas som |
 | --- | --- |
