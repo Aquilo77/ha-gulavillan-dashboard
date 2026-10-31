@@ -26,17 +26,19 @@ Välj inte Home Assistants egen port (oftast 8123).
 
 Ritningen är `custom_components/gulavillan_dashboard/www/page.svg`. Den ändras här i repot, inte på sidan.
 
-Sidan är en gul tvåvåningsvilla. Fönster och lampan vid dörren går att klicka och tänder eller släcker lampan. Dörren ritas öppen eller stängd. Den förväntar sig de här entiteterna:
+Sidan är en gul tvåvåningsvilla. Ute- och innetemperatur, klockan och luftfuktigheten ritas på huset. Grafen under takfoten är utetemperaturen det senaste dygnet. Fönster och lampan vid dörren går att klicka och tänder eller släcker lampan. Dörren ritas öppen eller stängd.
 
-| Entitet | Visas som |
-| --- | --- |
-| `sensor.temperatur_ute` | Ute, med graf för senaste dygnet |
-| `climate.vardagsrum` | Inomhustemperatur och läge |
-| `sensor.luftfuktighet` | Luftfuktighet |
-| `light.vardagsrum`, `light.kok`, `light.hall` | Fönster och lampa på huset |
-| `binary_sensor.ytterdorr` | Dörr |
+Saknas de namngivna entiteterna väljer sidan själv bland det som finns i Home Assistant:
 
-Saknas en entitet visas ett streck. Säg till vilka riktiga entity_id som ska användas, så byts de i SVG-filen.
+| Plats på huset | Förstaval | Annars |
+| --- | --- | --- |
+| Ute, och grafen | `sensor.temperatur_ute` | En temperatursensor vars namn innehåller ute, utomhus eller liknande. Finns ingen sådan används väderentitetens temperatur. |
+| Inne | `climate.vardagsrum` | En annan temperatursensor, eller klimatets aktuella temperatur. |
+| Luftfuktighet | `sensor.luftfuktighet` | En sensor med enhetsklassen fuktighet. |
+| Fönster och lampa | `light.vardagsrum`, `light.hall`, `light.kok`, `light.sovrum` | Lampor i huset, med vardagsrum, kök, hall och sovrum först. |
+| Dörr | `binary_sensor.ytterdorr` | En dörrsensor. |
+
+Saknas även det visas ett streck på den platsen.
 
 Värdena kommer från Home Assistant via integrationens egen anslutning. Webbläsaren får ingen HA-token. En pinkod som sätts i integrationen gäller för att öppna sidan.
 

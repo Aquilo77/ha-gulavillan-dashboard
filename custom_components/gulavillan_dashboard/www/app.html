@@ -37,6 +37,43 @@
       const ON = new Set(["on", "open", "unlocked", "home", "heat", "cool", "heat_cool", "dry", "fan_only", "playing"]);
       const LABELS = { on: "På", off: "Av", unavailable: "Otillgänglig", unknown: "Okänt", heat: "Värme", cool: "Kyla", open: "Öppen", closed: "Stängd", locked: "Låst", unlocked: "Olåst" };
       let states = {};
+      let slots = { lights: [] };
+
+      function resolveSlots() {
+        const list = Object.entries(states);
+        const label = (id, state) => `${id} ${state.attributes?.friendly_name || ""}`.toLowerCase();
+        const temps = list.filter(([id, state]) => id.startsWith("sensor.") && (state.attributes?.device_class === "temperature" || state.attributes?.unit_of_measurement === "°C" || state.attributes?.unit_of_measurement === "°F"));
+        const outdoor = temps.find(([id, state]) => /ute|utom|out|outside|weather|vader|tradgard|balkong|fasad/.test(label(id, state)));
+        const indoorNamed = temps.find((item) => item !== outdoor && /inne|inom|indoor|vardagsrum|boyta|rum|kok|sovrum/.test(label(item[0], item[1])));
+        const indoor = indoorNamed || temps.find((item) => item !== outdoor);
+        const humidity = list.find(([id, state]) => id.startsWith("sensor.") && state.attributes?.device_class === "humidity")
+          || list.find(([id, state]) => id.startsWith("sensor.") && state.attributes?.unit_of_measurement === "%" && /fukt|humid/.test(label(id, state)));
+        const climate = list.find(([id]) => id.startsWith("climate."));
+        const weather = list.find(([id]) => id.startsWith("weather."));
+        const pool = list.filter(([id]) => id.startsWith("light.")).map(([id]) => id);
+        const lights = [];
+        for (const hint of [/vardagsrum|living/, /kok|kitchen/, /hall|entre|entry/, /sovrum|bed/]) {
+          const index = pool.findIndex((id) => hint.test(label(id, states[id] || {})));
+          if (index >= 0) lights.push(pool.splice(index, 1)[0]);
+        }
+        pool.sort((a, b) => label(a, states[a] || {}).localeCompare(label(b, states[b] || {}), "sv"));
+        lights.push(...pool);
+        const door = list.find(([id, state]) => id.startsWith("binary_sensor.") && (state.attributes?.device_class === "door" || state.attributes?.device_class === "garage_door" || /dorr|door|ytter|entre/.test(label(id, state))));
+        slots = {
+          outdoor: outdoor?.[0] || weather?.[0] || "sensor.temperatur_ute",
+          indoor: indoor?.[0] || "sensor.temperatur_inne",
+          humidity: humidity?.[0] || "sensor.luftfuktighet",
+          climate: climate?.[0] || "climate.vardagsrum",
+          door: door?.[0] || "binary_sensor.ytterdorr",
+          lights,
+        };
+      }
+
+      function entityFor(el) {
+        if (el.dataset.slot === "light") return slots.lights[Number(el.dataset.index || 0)] || el.dataset.entity;
+        if (el.dataset.slot && slots[el.dataset.slot]) return slots[el.dataset.slot];
+        return el.dataset.entity;
+      }
       const stage = document.querySelector("#stage");
       const gate = document.querySelector("#gate");
 
@@ -57,11 +94,22 @@
       }
 
       function rawValue(state, el) {
+        if (el.dataset.slot === "outdoor" && String(slots.outdoor).startsWith("weather.")) {
+          const temp = state?.attributes?.temperature;
+          return temp == null || temp === "" ? null : temp;
+        }
+        if (el.dataset.slot === "indoor") {
+          const numeric = state && Number.isFinite(Number(state.state)) ? state.state : null;
+          if (numeric != null && state.state !== "unavailable" && state.state !== "unknown") return numeric;
+          const indoor = states[slots.climate]?.attributes?.current_temperature;
+          if (indoor != null && indoor !== "") return indoor;
+        }
         if (!state) return null;
         if (el.dataset.attribute) {
           const value = state.attributes?.[el.dataset.attribute];
           return value == null || value === "" ? null : value;
         }
+        if (state.state === "unavailable" || state.state === "unknown") return null;
         return state.state;
       }
 
@@ -69,10 +117,14 @@
         const widget = el.dataset.widget;
         if (widget === "clock") return new Intl.DateTimeFormat("sv-SE", { hour: "2-digit", minute: "2-digit" }).format(new Date());
         if (widget === "date") return new Intl.DateTimeFormat("sv-SE", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
-        if (widget === "name") return state?.attributes?.friendly_name || "–";
+        if (widget === "name") {
+          if (state?.attributes?.friendly_name) return state.attributes.friendly_name;
+          if (el.dataset.slot === "indoor") return states[slots.climate]?.attributes?.friendly_name || "";
+          return "";
+        }
         if (widget === "unit") return state?.attributes?.unit_of_measurement || el.textContent || "";
         const raw = rawValue(state, el);
-        if (raw == null) return "–";
+        if (raw == null) return widget === "label" ? "" : "–";
         if (widget === "label") return LABELS[String(raw)] || String(raw);
         if (el.dataset.decimals != null && el.dataset.decimals !== "") {
           const number = Number(raw);
@@ -87,9 +139,10 @@
       }
 
       function apply(root) {
+        resolveSlots();
         root.querySelectorAll("[data-widget]").forEach((el) => {
           const widget = el.dataset.widget;
-          const state = states[el.dataset.entity];
+          const state = states[entityFor(el)];
           if (["value", "label", "name", "unit", "clock", "date"].includes(widget)) el.textContent = textOf(state, el);
           if (widget === "state-fill") {
             const on = state && ON.has(state.state);
@@ -114,7 +167,7 @@
       async function drawSparks(svg) {
         const plots = [...svg.querySelectorAll('[data-widget="sparkline"]')];
         await Promise.all(plots.map(async (el, index) => {
-          const entity = el.dataset.entity;
+          const entity = entityFor(el);
           if (!entity) return;
           const response = await fetch(`/api/history?entity_id=${encodeURIComponent(entity)}&hours=${Number(el.dataset.hours || 24)}`, { credentials: "same-origin" });
           const points = response.ok ? ((await response.json()).points || []) : [];
@@ -129,7 +182,7 @@
             line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
             line.setAttribute("fill", "none");
             line.setAttribute("stroke", el.dataset.stroke || "#e0b15a");
-            line.setAttribute("stroke-width", "3");
+            line.setAttribute("stroke-width", "4");
             line.setAttribute("stroke-linejoin", "round");
             line.setAttribute("stroke-linecap", "round");
             line.dataset.spark = String(index);
@@ -177,12 +230,13 @@
         connect(svg);
         svg.addEventListener("click", (event) => {
           const target = event.target.closest("[data-action='toggle']");
-          if (!target?.dataset.entity) return;
+          const entityId = target ? entityFor(target) : "";
+          if (!entityId) return;
           fetch("/api/action", {
             method: "POST",
             credentials: "same-origin",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ entity_id: target.dataset.entity, action: "toggle" }),
+            body: JSON.stringify({ entity_id: entityId, action: "toggle" }),
           });
         });
       }
