@@ -7,18 +7,47 @@
     <link rel="stylesheet" href="/theme.css" />
     <style>
       * { box-sizing: border-box; }
-      html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-weight: var(--weight); }
+      html, body { margin: 0; min-height: 100%; background: var(--bg-gradient); color: var(--text); font-family: var(--font); font-weight: var(--weight); }
       button, input { font: inherit; color: inherit; }
       button { cursor: pointer; }
       #app { min-height: 100vh; display: flex; flex-direction: column; }
-      #tabs { display: flex; gap: var(--space-sm); overflow-x: auto; padding: var(--space-sm) var(--space); position: sticky; top: 0; background: var(--bg); z-index: 2; }
-      #tabs button { min-height: var(--tap); padding: 0 var(--space); border-radius: var(--radius-pill); border: var(--line-width) solid var(--line); background: transparent; white-space: nowrap; }
-      #tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); font-weight: var(--weight-strong); }
-      #view { flex: 1; padding: var(--space); display: flex; flex-direction: column; gap: var(--gap); }
-      #view.hem { padding: 0; }
-      #stage { height: calc(100vh - var(--tab-h)); }
-      #stage svg { width: 100%; height: 100%; display: block; }
-      #stage svg [data-action="toggle"] { cursor: pointer; }
+      #tabs { display: flex; gap: var(--space-xs); overflow-x: auto; justify-content: center; padding: var(--space) var(--space-lg) var(--space-sm); position: sticky; top: 0; z-index: 2; }
+      #tabs button { min-height: var(--tab-h); padding: var(--space-sm) var(--space); border-radius: var(--radius-sm); border: var(--line-width) solid transparent; background: transparent; color: var(--tab-idle); white-space: nowrap; font-size: 13px; font-weight: var(--weight-strong); }
+      #tabs button[aria-selected="true"] { color: var(--text); background: var(--accent); border-color: var(--accent-border); }
+      #view { flex: 1; padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--gap); }
+      #view.hem { padding: 0; gap: 0; }
+      .hem-layout { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+      .stage { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; }
+      .brand { position: absolute; top: var(--space-sm); left: var(--space-xl); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--tab-idle); }
+      .clock-float { position: absolute; top: 0; right: var(--space-xl); text-align: right; }
+      .clock-float .t { font-size: var(--clock); font-weight: var(--weight-light); letter-spacing: -1px; line-height: 1; }
+      .clock-float .d { font-size: 14px; color: var(--muted); }
+      .iso-wrap { position: relative; width: min(var(--house-w), 72vw); aspect-ratio: 520 / 420; }
+      .iso-wrap svg.house { width: 100%; height: 100%; display: block; }
+      .iso-wrap svg [data-action="toggle"] { cursor: pointer; }
+      .float-card { position: absolute; background: var(--card); border: var(--line-width) solid var(--line); border-radius: var(--radius); padding: 14px 18px; box-shadow: var(--shadow); min-width: 140px; }
+      .float-card .lbl { font-size: 11px; color: var(--muted); margin-bottom: var(--space-xs); text-transform: uppercase; letter-spacing: .08em; }
+      .float-card .val { font-size: 26px; font-weight: var(--weight-strong); }
+      .float-card .val small { font-size: 14px; color: var(--muted); font-weight: var(--weight); margin-left: var(--space-xs); }
+      .float-card.c1 { top: 4%; left: -8%; }
+      .float-card.c2 { top: 4%; right: -10%; }
+      .float-card.c3 { bottom: 18%; left: -12%; }
+      .float-card.c4 { bottom: 18%; right: -14%; }
+      .spark { width: 100px; height: 28px; margin-top: 6px; display: block; color: var(--info); }
+      .bottom-bar { display: flex; gap: var(--space); padding: 0 var(--space-xl) var(--space-lg); align-items: stretch; }
+      .chips { flex: 1; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: var(--card); border: var(--line-width) solid var(--line-soft); border-radius: var(--radius); padding: 14px 18px; }
+      .chip { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; padding: var(--space-sm) 14px; border-radius: var(--radius-pill); background: var(--chip); }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+      .dot.g { background: var(--ok); }
+      .dot.a { background: var(--warn); }
+      .dot.b { background: var(--info); }
+      .dot.r { background: var(--danger); }
+      .presence { display: flex; gap: 14px; align-items: center; background: var(--card); border: var(--line-width) solid var(--line-soft); border-radius: var(--radius); padding: 10px 20px 22px; }
+      .presence .lbl { font-size: 11px; color: var(--tab-idle); text-transform: uppercase; letter-spacing: .08em; }
+      .presence .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: var(--weight-strong); font-size: 14px; background: var(--chip); border: 2px solid var(--line); position: relative; color: var(--text); }
+      .presence .avatar.home { border-color: var(--ok); }
+      .presence .avatar.away { opacity: .4; }
+      .presence .tip { position: absolute; bottom: -16px; font-size: 9px; color: var(--tab-idle); white-space: nowrap; font-weight: var(--weight); }
       .page { display: flex; flex-direction: column; gap: var(--gap); }
       .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min), 1fr)); gap: var(--gap); }
       .card { background: var(--card); border: var(--line-width) solid var(--line); border-radius: var(--radius); padding: var(--space); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: var(--space-sm); }
@@ -30,13 +59,13 @@
       .muted { color: var(--muted); }
       .value { font-size: var(--value); font-weight: var(--weight-strong); }
       .row { display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; }
-      button.action, button.primary { min-height: var(--tap); padding: 0 var(--space); border: 0; border-radius: var(--radius-sm); background: var(--accent); color: var(--accent-ink); font-weight: var(--weight-strong); }
+      button.action, button.primary { min-height: var(--tap); padding: 0 var(--space); border: 0; border-radius: var(--radius-sm); background: var(--accent-solid); color: var(--accent-ink); font-weight: var(--weight-strong); }
       button.ghost { min-height: var(--tap); padding: 0 var(--space); border-radius: var(--radius-sm); border: var(--line-width) solid var(--line); background: transparent; }
-      input[type="range"] { width: 100%; height: var(--tap); accent-color: var(--accent); }
+      input[type="range"] { width: 100%; height: var(--tap); accent-color: var(--accent-solid); }
       input[type="password"], input[type="text"] { width: 100%; min-height: var(--tap); border-radius: var(--radius-sm); border: var(--line-width) solid var(--line); background: var(--bg); padding: 0 var(--space-sm); }
       .avatar { width: var(--tap); height: var(--tap); border-radius: var(--radius-pill); background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: var(--weight-strong); flex: none; }
       .shot { width: 100%; border-radius: var(--radius-sm); background: var(--bg); }
-      .chart { width: 100%; height: var(--chart-h); color: var(--accent); }
+      .chart { width: 100%; height: var(--chart-h); color: var(--accent-solid); }
       #gate:not([hidden]) { min-height: 100vh; display: grid; place-items: center; padding: var(--space); }
       #gate .card, #modal .card { width: min(420px, 100%); }
       [hidden] { display: none !important; }
@@ -180,8 +209,9 @@
 
       function entityFor(el) {
         if (el.dataset.slot === "light") return slots.lights[Number(el.dataset.index || 0)] || "";
+        if (el.dataset.slot === "price") return home?.focus?.price || "";
         if (el.dataset.slot) return slots[el.dataset.slot] || "";
-        return "";
+        return el.dataset.entity || "";
       }
 
       function rawValue(state, el) {
@@ -264,7 +294,7 @@
             line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
             line.setAttribute("fill", "none");
             line.setAttribute("stroke", el.dataset.stroke || "currentColor");
-            line.setAttribute("stroke-width", "4");
+            line.setAttribute("stroke-width", el.dataset.strokeWidth || "2");
             line.setAttribute("stroke-linejoin", "round");
             line.setAttribute("stroke-linecap", "round");
             line.dataset.spark = String(index);
@@ -282,27 +312,147 @@
         }));
       }
 
+      let hemRoot = null;
+
+      function chip(kind, text) {
+        const node = h("div", { class: "chip" });
+        node.append(h("span", { class: "dot " + kind }));
+        node.append(document.createTextNode(text));
+        return node;
+      }
+
+      function statusChips() {
+        syncSlots();
+        const nodes = [];
+        const alarm = allEntities().find((entity) => entity.kind === "alarm");
+        if (alarm) {
+          const state = live(alarm).state;
+          const dot = state === "triggered" ? "r" : (state === "disarmed" ? "g" : "a");
+          nodes.push(chip(dot, "Larm: " + labelOf(state)));
+        }
+        if (slots.door && states[slots.door]) {
+          const state = states[slots.door].state;
+          const open = state === "on" || state === "open";
+          const name = findEntity(slots.door)?.name || "Dörr";
+          nodes.push(chip(open ? "a" : "g", name + ": " + (open ? "Öppen" : "Stängd")));
+        }
+        const lights = allEntities().filter((entity) => entity.kind === "light");
+        const lit = lights.filter((entity) => live(entity).state === "on").length;
+        if (lights.length) {
+          const text = lit === 1 ? "1 lampa tänd" : (lit ? lit + " lampor tända" : "Alla släckta");
+          nodes.push(chip(lit ? "a" : "g", text));
+        }
+        const price = findEntity(home?.focus?.price);
+        if (price) {
+          const state = live(price);
+          const unit = state.attributes.unit_of_measurement || "";
+          nodes.push(chip("b", "Elpris " + formatNumber(state.state, 2) + (unit ? " " + unit : "")));
+        }
+        return nodes;
+      }
+
+      function fillPresence(host) {
+        host.replaceChildren(h("span", { class: "lbl", text: "Närvaro" }));
+        const people = allEntities().filter((entity) => entity.kind === "person");
+        if (!people.length) {
+          host.append(h("span", { class: "muted", text: "Ingen" }));
+          return;
+        }
+        for (const person of people.slice(0, 8)) {
+          const atHome = live(person).state === "home";
+          const avatar = h("div", { class: atHome ? "avatar home" : "avatar away" });
+          avatar.append(document.createTextNode((person.name || "?").trim().charAt(0).toUpperCase()));
+          avatar.append(h("span", { class: "tip", text: atHome ? "Hemma" : "Borta" }));
+          host.append(avatar);
+        }
+      }
+
+      function refreshHem() {
+        if (!hemRoot) return;
+        apply(hemRoot);
+        const chips = hemRoot.querySelector(".chips");
+        const presence = hemRoot.querySelector(".presence");
+        if (chips) chips.replaceChildren(...statusChips());
+        if (presence) fillPresence(presence);
+      }
+
+      function floatCard(place, label, slot, decimals, unit, spark) {
+        const card = h("div", { class: "float-card " + place });
+        card.append(h("div", { class: "lbl", text: label }));
+        const value = h("div", { class: "val" });
+        const number = document.createElement("span");
+        number.dataset.slot = slot;
+        number.dataset.widget = "value";
+        number.dataset.decimals = String(decimals);
+        number.textContent = "–";
+        value.append(number);
+        if (unit) {
+          const small = document.createElement("small");
+          small.dataset.slot = slot;
+          small.dataset.widget = "unit";
+          small.textContent = unit;
+          value.append(small);
+        }
+        card.append(value);
+        if (spark) {
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("class", "spark");
+          svg.setAttribute("viewBox", "0 0 100 28");
+          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          rect.setAttribute("x", "0");
+          rect.setAttribute("y", "0");
+          rect.setAttribute("width", "100");
+          rect.setAttribute("height", "28");
+          rect.setAttribute("fill", "none");
+          rect.dataset.slot = "outdoor";
+          rect.dataset.widget = "sparkline";
+          rect.dataset.hours = "24";
+          rect.dataset.stroke = "currentColor";
+          rect.dataset.strokeWidth = "1.5";
+          svg.append(rect);
+          card.append(svg);
+        }
+        return card;
+      }
+
       function ensureVilla() {
-        if (svgRoot && view.contains(svgRoot)) {
-          apply(svgRoot);
+        if (hemRoot && view.contains(hemRoot)) {
+          refreshHem();
           return;
         }
         const parsed = new DOMParser().parseFromString(designSvg, "image/svg+xml");
         svgRoot = parsed.querySelector("svg");
         if (!svgRoot) return;
-        svgRoot.setAttribute("width", "100%");
-        svgRoot.setAttribute("height", "100%");
-        const stage = h("div", { id: "stage" });
-        stage.id = "stage";
-        stage.append(svgRoot);
-        view.replaceChildren(stage);
+        svgRoot.setAttribute("class", "house");
         svgRoot.addEventListener("click", (event) => {
           const target = event.target.closest("[data-action='toggle']");
           const entityId = target ? entityFor(target) : "";
           if (entityId) act({ action: "toggle", entity_id: entityId });
         });
-        apply(svgRoot);
-        drawSparks(svgRoot);
+        hemRoot = h("div", { class: "hem-layout" });
+        const stage = h("div", { class: "stage" });
+        stage.append(h("div", { class: "brand", text: "Gulavillan" }));
+        const clock = h("div", { class: "clock-float" });
+        const time = h("div", { class: "t", text: "--:--" });
+        time.dataset.widget = "clock";
+        const date = h("div", { class: "d" });
+        date.dataset.widget = "date";
+        clock.append(time, date);
+        stage.append(clock);
+        const wrap = h("div", { class: "iso-wrap" });
+        wrap.append(svgRoot);
+        wrap.append(floatCard("c1", "Ute", "outdoor", 1, "°", true));
+        wrap.append(floatCard("c2", "Inne", "indoor", 1, "°", false));
+        wrap.append(floatCard("c3", "Luftfuktighet", "humidity", 0, " %", false));
+        wrap.append(floatCard("c4", "Elpris", "price", 2, "kr", false));
+        stage.append(wrap);
+        const bar = h("div", { class: "bottom-bar" });
+        bar.append(h("div", { class: "chips" }));
+        bar.append(h("div", { class: "presence" }));
+        hemRoot.append(stage, bar);
+        view.replaceChildren(hemRoot);
+        refreshHem();
+        drawSparks(hemRoot);
       }
 
       function lightCard(entity) {
@@ -690,9 +840,9 @@
           if (message.type === "snapshot") states = message.states || {};
           if (message.type === "state") states[message.entity_id] = message.state;
           seedStates();
-          if (tab === "hem" && svgRoot) {
-            apply(svgRoot);
-            if (message.type === "snapshot") drawSparks(svgRoot);
+          if (tab === "hem" && hemRoot) {
+            refreshHem();
+            if (message.type === "snapshot") drawSparks(hemRoot);
             return;
           }
           const active = document.activeElement;
@@ -717,7 +867,7 @@
         renderTabs();
         render();
         connect();
-        setInterval(() => { if (tab === "hem" && svgRoot) apply(svgRoot); }, 1000);
+        setInterval(() => { if (tab === "hem") refreshHem(); }, 1000);
         setInterval(async () => {
           const response = await fetch("/api/home", { credentials: "same-origin" });
           if (!response.ok) return;

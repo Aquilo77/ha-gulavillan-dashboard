@@ -31,9 +31,9 @@ async def test_page_is_the_shipped_drawing(hass: HomeAssistant, socket_enabled: 
             assert "Redigera" not in html
         async with session.get("http://127.0.0.1:18770/api/design") as response:
             body = await response.json()
-            assert "data-slot=\"outdoor\"" in body["svg"]
+            assert "data-slot=\"door\"" in body["svg"]
+            assert "data-slot=\"light\"" in body["svg"]
             assert "sensor." not in body["svg"]
-            assert "data-widget=\"sparkline\"" in body["svg"]
             assert "data-action=\"toggle\"" in body["svg"]
         async with session.post("http://127.0.0.1:18770/api/design", json={"svg": "<svg></svg>"}) as response:
             assert response.status == 405
@@ -85,6 +85,7 @@ async def test_home_groups_entities(hass: HomeAssistant, socket_enabled: None, e
         async with session.get("http://127.0.0.1:18772/") as response:
             html = await response.text()
             assert "Belysning" in html
+            assert "sparkline" in html
             assert "#10151c" not in html
         async with session.get("http://127.0.0.1:18772/api/home") as response:
             body = await response.json()

@@ -1,37 +1,48 @@
-/* Gulavillan theme.
-   Colors, type, radii, shadows and spacing live in this file.
-   Restyle the page by editing these custom properties only. */
+/* Gulavillan theme: Isometrisk.
+   Colors, type, radii, shadows and spacing live here. */
 
 :root {
   color-scheme: dark;
-  --font: system-ui, sans-serif;
+  --font: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
   --weight: 400;
-  --weight-strong: 650;
-  --bg: #10151c;
-  --card: #1b2430;
-  --text: #f4f0e8;
-  --muted: #b3aa9c;
-  --accent: #e0b15a;
+  --weight-strong: 500;
+  --weight-light: 200;
+  --bg: #141c2c;
+  --bg-deep: #0c1018;
+  --bg-gradient: radial-gradient(ellipse at 50% 30%, #2a3850 0%, #141c2c 55%, #0c1018 100%);
+  --card: rgba(20, 28, 44, 0.85);
+  --text: #e8eef8;
+  --muted: rgba(255, 255, 255, 0.45);
+  --tab-idle: rgba(255, 255, 255, 0.4);
+  --accent: rgba(255, 200, 80, 0.2);
+  --accent-border: rgba(255, 200, 80, 0.35);
+  --accent-solid: #e8c040;
   --accent-ink: #1c1408;
-  --line: rgba(255, 255, 255, 0.08);
+  --line: rgba(255, 255, 255, 0.12);
+  --line-soft: rgba(255, 255, 255, 0.1);
   --line-width: 1px;
-  --danger: #d4655b;
-  --ok: #7eaf5c;
-  --warn: #e0b15a;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
-  --radius: 20px;
-  --radius-sm: 12px;
+  --chip: rgba(255, 255, 255, 0.06);
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --info: #60a5fa;
+  --danger: #f07178;
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --radius: 16px;
+  --radius-sm: 10px;
   --radius-pill: 999px;
   --space-xs: 4px;
   --space-sm: 8px;
   --space: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
+  --space-lg: 28px;
+  --space-xl: 36px;
   --tap: 48px;
-  --tab-h: 64px;
-  --title: 1.5rem;
-  --value: 2.4rem;
-  --card-min: 280px;
+  --tab-h: 56px;
+  --title: 1.35rem;
+  --value: 1.6rem;
+  --clock: 48px;
+  --card-min: 260px;
   --gap: 16px;
   --chart-h: 96px;
+  --house-w: 520px;
+  --house-h: 420px;
 }
