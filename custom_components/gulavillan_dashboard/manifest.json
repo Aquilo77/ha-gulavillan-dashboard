@@ -1,7 +1,7 @@
 {
   "domain": "gulavillan_dashboard",
   "name": "Gulavillan",
-  "after_dependencies": ["http"],
+  "after_dependencies": ["camera", "http", "recorder"],
   "codeowners": ["@Aquilo77"],
   "config_flow": true,
   "documentation": "https://github.com/Aquilo77/ha-gulavillan-dashboard",

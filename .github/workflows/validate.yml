@@ -37,3 +37,4 @@ jobs:
         with:
           category: integration
           comment: false
+          ignore: description topics
