@@ -4,6 +4,14 @@ En sida i Home Assistants sidomeny. Hem är en isometrisk gul villa. Övriga fli
 
 Du loggar in med ditt vanliga Home Assistant-konto. En egen port och en pinkod för hela sidan behövs inte längre.
 
+## Två vyer
+
+**Startsida** visar villan och bara de översiktskort som har data: belysning, klimat, energi, avvikelser, media, fordon och väder. Tomma kort ritas inte. Säkerhet visas när något är öppet, utlöst, olåst eller otillgängligt. Energikortet summerar bara watt och kilowattimmar var för sig. Saknas enhet räknas den inte in, och en kostnad hittas aldrig på.
+
+**Kontrollpanel** är flikarna nedan, utan Hem. **Granska** syns när en enhet inte kunde klassas. Visa eller Dölj sparas i Home Assistant och skrivs inte över nästa gång enheterna läses in. Temat följer systemet tills du byter det med knappen uppe till höger. Valet ligger i webbläsaren.
+
+Byggmallen från kollegan ligger i `HOME_ASSISTANT_AI_SPEC.md`. Den beskriver två egna program på port 3030 och 3001. Den vägen används inte: sidan är en integration i sidomenyn, med samma inloggning som Home Assistant, och den egna porten är av. Klassning, förtroende, granskningskö, sparade val och enhetsregler följer mallen. Automatisk visning gäller de kategorier som redan kunde klassas med hög säkerhet, annars skulle en fungerande sida bli tom. Osäkra enheter hamnar i kön i stället. Kortens rundning är 16 px från den isometriska villan.
+
 ## Installation
 
 Kräver Home Assistant Core 2026.10 eller nyare, och [HACS](https://hacs.xyz/).
@@ -46,7 +54,7 @@ En flik visas bara om det finns något att visa.
 
 | Flik | Innehåll |
 | --- | --- |
-| Hem | Isometrisk gul villa. Klocka, ute med graf, inne, luftfuktighet och elpris svävar runt huset. Fönstren tänds av lamporna och går att klicka. Dörren följer dörrsensorn. Status och närvaro ligger längs nederkanten. |
+| Startsida | Isometrisk gul villa plus översiktskorten. Klocka, ute med graf, inne, luftfuktighet och elpris svävar runt huset. Fönstren tänds av lamporna och går att klicka. Dörren följer dörrsensorn. Status och närvaro ligger längs nederkanten. |
 | Belysning | Lampor per våning och område, med tänd/släck, ljusstyrka och släck allt. Strömbrytare kommer med bara om du valt dem. |
 | Klimat | Klimat, temperatur, luftfuktighet och ljus per område, plus ute och väder. |
 | Närvaro | Personer, enhetsspårare, rörelse och när den senast ändrades. |

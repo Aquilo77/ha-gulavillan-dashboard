@@ -1,7 +1,8 @@
 /* Gulavillan theme: Isometrisk.
    Colors, type, radii, shadows and spacing live here. */
 
-:root {
+:root,
+[data-theme="dark"] {
   color-scheme: dark;
   --font: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
   --weight: 400;
@@ -45,4 +46,43 @@
   --chart-h: 96px;
   --house-w: 520px;
   --house-h: 420px;
+  --page: #141c2c;
+  --surface-1: rgba(20, 28, 44, 0.92);
+  --border: rgba(255, 255, 255, 0.12);
+  --text-primary: #e8eef8;
+  --text-secondary: rgba(255, 255, 255, 0.72);
+  --text-muted: rgba(255, 255, 255, 0.45);
+  --good: #4ade80;
+  --bad: #f07178;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --page: #f7f8fa;
+  --surface-1: #ffffff;
+  --border: #e7e9ee;
+  --text-primary: #1c2430;
+  --text-secondary: #3d4754;
+  --text-muted: #5c6775;
+  --accent: #1b63c4;
+  --accent-border: #1b63c4;
+  --accent-solid: #1b63c4;
+  --accent-ink: #ffffff;
+  --bg: var(--page);
+  --bg-deep: #eef1f6;
+  --bg-gradient: var(--page);
+  --card: var(--surface-1);
+  --text: var(--text-primary);
+  --muted: var(--text-muted);
+  --tab-idle: var(--text-secondary);
+  --line: var(--border);
+  --line-soft: var(--border);
+  --chip: #f1f3f7;
+  --ok: var(--good);
+  --warn: #b86e00;
+  --info: #1b63c4;
+  --danger: var(--bad);
+  --shadow: 0 8px 24px rgba(20, 28, 44, 0.08);
+  --good: #1f7a3a;
+  --bad: #a33b32;
 }

@@ -14,6 +14,8 @@ from homeassistant.helpers import config_validation as cv
 from .access import pin_matches
 from .catalog import async_build_catalog
 from .const import DOMAIN
+from .preferences import async_update_entity_choice
+from .rules import CATEGORIES
 from .server import _ALARM_SERVICES, entry_settings
 
 _LOGGER = logging.getLogger(__name__)
@@ -75,11 +77,44 @@ async def ws_alarm(
     connection.send_result(msg["id"], {"ok": True})
 
 
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "gulavillan_dashboard/preferences",
+        vol.Required("entity_id"): cv.entity_id,
+        vol.Optional("hidden"): bool,
+        vol.Optional("category"): vol.In(CATEGORIES),
+        vol.Optional("name"): str,
+        vol.Optional("decision"): vol.In(["accepted", "rejected"]),
+    }
+)
+@websocket_api.async_response
+async def ws_preferences(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Save one user choice and return the catalog. Discovery does not clear it."""
+    if _entry(hass) is None:
+        connection.send_error(msg["id"], "not_found", "Gulavillan is not set up")
+        return
+    await async_update_entity_choice(
+        hass,
+        msg["entity_id"],
+        hidden=msg.get("hidden"),
+        category=msg.get("category"),
+        name=msg.get("name"),
+        decision=msg.get("decision"),
+    )
+    entry = _entry(hass)
+    catalog = await async_build_catalog(hass, {**entry.data, **entry.options})
+    catalog["pin_required"] = bool(entry_settings(entry)["pin"])
+    connection.send_result(msg["id"], catalog)
+
+
 def async_setup_commands(hass: HomeAssistant) -> None:
     """Register the page commands once."""
     if hass.data.get(f"{DOMAIN}_ws"):
         return
     websocket_api.async_register_command(hass, ws_entities)
     websocket_api.async_register_command(hass, ws_alarm)
+    websocket_api.async_register_command(hass, ws_preferences)
     hass.data[f"{DOMAIN}_ws"] = True
     _LOGGER.debug("Gulavillan websocket commands registered")
