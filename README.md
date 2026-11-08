@@ -28,14 +28,16 @@ Gulavillan syns sedan i sidomenyn. Första gången kopieras sidan till `/config/
 
 ## Uppdatera utseendet utan omstart
 
-När en ny version av sidan finns på GitHub:
+En ändring av sidan höjer inte versionsnumret. HACS ska inte visa en uppdatering, och Home Assistant ska inte startas om.
 
 1. Öppna **Utvecklarverktyg → Åtgärder**.
 2. Kör **gulavillan_dashboard.update_frontend**.
-3. Lämna fältet tomt för senaste releasen, eller skriv en gren eller tagg.
-4. Ladda om sidan i webbläsaren. En väggplatta som redan visar sidan laddar om sig själv när versionen ändras.
+3. Skriv `main` i fältet **Gren eller tagg**.
+4. Väggplattan laddar om sig själv när sidan är bytt.
 
-Det behövs ingen omstart av Home Assistant, och inte en ny nedladdning i HACS, för att byta villan, färger eller flikar. HACS-nedladdning och omstart behövs bara när Python-koden i integrationen ändras.
+Om HACS ändå visar 0.9.1: installera den inte, och starta inte om. Det var ett misstag. Versionsnumret på `main` är 0.9.0 igen.
+
+HACS-nedladdning och omstart behövs bara när Python-koden i integrationen ändras.
 
 **gulavillan_dashboard.rollback_frontend** lägger tillbaka den förra sidkopian. Bara administratörer kan köra de här åtgärderna.
 
