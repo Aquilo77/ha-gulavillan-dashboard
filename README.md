@@ -10,7 +10,7 @@ Du loggar in med ditt vanliga Home Assistant-konto. En egen port och en pinkod f
 
 **Kontrollpanel** är flikarna nedan, utan Hem. **Granska** syns när en enhet inte kunde klassas. Visa eller Dölj sparas i Home Assistant och skrivs inte över nästa gång enheterna läses in. Temat följer systemet tills du byter det med knappen uppe till höger. Valet ligger i webbläsaren.
 
-Byggmallen från kollegan ligger i `HOME_ASSISTANT_AI_SPEC.md`. Den beskriver två egna program på port 3030 och 3001. Den vägen används inte: sidan är en integration i sidomenyn, med samma inloggning som Home Assistant, och den egna porten är av. Klassning, förtroende, granskningskö, sparade val och enhetsregler följer mallen. Automatisk visning gäller de kategorier som redan kunde klassas med hög säkerhet, annars skulle en fungerande sida bli tom. Osäkra enheter hamnar i kön i stället. Kortens rundning är 16 px från den isometriska villan.
+Byggmallen från kollegan ligger i `HOME_ASSISTANT_AI_SPEC.md`. Den beskriver två egna program på port 3030 och 3001. Den vägen används inte: sidan är en integration i sidomenyn, med samma inloggning som Home Assistant, och den egna porten är av. Klassning, förtroende, granskningskö, sparade val och enhetsregler följer mallen. Automatisk visning gäller de kategorier som redan kunde klassas med hög säkerhet, annars skulle en fungerande sida bli tom. Osäkra enheter hamnar i kön i stället. Sidans färger, 14 px hörnradie och 56 px meny följer avsnitt 6 i den filen. Villan är illustrationen högst upp.
 
 ## Installation
 
