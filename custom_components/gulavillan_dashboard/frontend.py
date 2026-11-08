@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import re
@@ -51,9 +52,22 @@ def read_version(hass: HomeAssistant) -> str:
     return bundled_version()
 
 
-def _write_version(directory: Path, version: str, source: str) -> None:
-    payload = {"version": version, "source": source}
+def _content_stamp(directory: Path) -> str:
+    """Return a short hash of the page files so identical refs still reload."""
+    digest = hashlib.sha256()
+    for name in _FILES:
+        digest.update(name.encode("utf-8"))
+        digest.update((directory / name).read_bytes())
+    return digest.hexdigest()[:12]
+
+
+def _write_version(directory: Path, label: str, source: str) -> str:
+    """Write version.json. The version always includes a content stamp."""
+    stamp = _content_stamp(directory)
+    version = f"{label}+{stamp}" if label else stamp
+    payload = {"version": version, "source": source, "label": label, "stamp": stamp}
     (directory / "version.json").write_text(json.dumps(payload), encoding="utf-8")
+    return version
 
 
 def _verify(directory: Path) -> None:
@@ -168,9 +182,8 @@ async def _download_release(hass: HomeAssistant, staging: Path) -> str:
         archive.unlink(missing_ok=True)
 
     await hass.async_add_executor_job(_extract)
-    version = str(payload.get("tag_name") or bundled_version()).removeprefix("v")
-    _write_version(staging, version, "release")
-    return version
+    label = str(payload.get("tag_name") or bundled_version()).removeprefix("v")
+    return _write_version(staging, label, "release")
 
 
 async def _download_ref(hass: HomeAssistant, ref: str, staging: Path) -> str:
@@ -179,8 +192,7 @@ async def _download_ref(hass: HomeAssistant, ref: str, staging: Path) -> str:
     base = f"https://raw.githubusercontent.com/{REPO}/{ref}/custom_components/gulavillan_dashboard/www/"
     for name in _FILES:
         (staging / name).write_bytes(await _download_bytes(hass, base + name))
-    _write_version(staging, ref, "ref")
-    return ref
+    return _write_version(staging, ref, "ref")
 
 
 async def async_update_frontend(hass: HomeAssistant, ref: str | None = None) -> dict[str, str]:
