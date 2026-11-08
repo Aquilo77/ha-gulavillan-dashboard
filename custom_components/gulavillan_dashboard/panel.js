@@ -8,13 +8,13 @@ class GulavillanPanel extends HTMLElement {
     if (this._iframe) return;
     this.style.display = "block";
     this.style.height = "100%";
-    this.style.background = "#141c2c";
+    this.style.background = "#0b1410";
     const iframe = document.createElement("iframe");
     iframe.setAttribute("title", "Gulavillan");
     iframe.style.border = "0";
     iframe.style.width = "100%";
     iframe.style.height = "100%";
-    iframe.style.background = "#141c2c";
+    iframe.style.background = "#0b1410";
     iframe.src = "/local/gulavillan/app.html";
     iframe.addEventListener("load", () => this._sendAuth());
     this.append(iframe);
@@ -46,7 +46,7 @@ class GulavillanPanel extends HTMLElement {
       }
     };
     await tick();
-    this._timer = setInterval(tick, 30000);
+    this._timer = setInterval(tick, 8000);
   }
 }
 

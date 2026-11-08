@@ -32,7 +32,7 @@ En ändring av sidan höjer inte versionsnumret. HACS ska inte visa en uppdateri
 
 1. Öppna **Utvecklarverktyg → Åtgärder**.
 2. Kör **gulavillan_dashboard.update_frontend**.
-3. Skriv `main` i fältet **Gren eller tagg**.
+3. Skriv senaste **commit-hash** från `main` i fältet **Gren eller tagg** (inte bara ordet `main`). Hashen gör att panelen laddar om; samma ord `main` varje gång kan behålla gammal cache.
 4. Väggplattan laddar om sig själv när sidan är bytt.
 
 Om HACS ändå visar 0.9.1: installera den inte, och starta inte om. Det var ett misstag. Versionsnumret på `main` är 0.9.0 igen.

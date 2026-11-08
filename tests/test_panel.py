@@ -121,16 +121,28 @@ async def test_frontend_update_swaps_and_rollback_restores(
         (staging / "app.html").write_text("<title>Gulavillan</title>\ntheme.css\nNEW", encoding="utf-8")
         (staging / "theme.css").write_text(":root { --bg: #111; }", encoding="utf-8")
         (staging / "page.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'></svg>", encoding="utf-8")
-        return "branch-test"
+        return frontend_mod._write_version(staging, ref, "ref")
 
     monkeypatch.setattr(frontend_mod, "_download_ref", _download)
     result = await frontend_mod.async_update_frontend(hass, "branch-test")
-    assert result["version"] == "branch-test"
+    assert result["version"].startswith("branch-test+")
     assert "NEW" in (frontend_dir(hass) / "app.html").read_text(encoding="utf-8")
     assert original in (previous_dir(hass) / "app.html").read_text(encoding="utf-8")
+    first = result["version"]
+
+    async def _download_again(hass, ref, staging):
+        (staging / "app.html").write_text("<title>Gulavillan</title>\ntheme.css\nNEWER", encoding="utf-8")
+        (staging / "theme.css").write_text(":root { --bg: #222; }", encoding="utf-8")
+        (staging / "page.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'></svg>", encoding="utf-8")
+        return frontend_mod._write_version(staging, ref, "ref")
+
+    monkeypatch.setattr(frontend_mod, "_download_ref", _download_again)
+    second = await frontend_mod.async_update_frontend(hass, "branch-test")
+    assert second["version"].startswith("branch-test+")
+    assert second["version"] != first
 
     restored = await async_rollback_frontend(hass)
-    assert "NEW" not in (frontend_dir(hass) / "app.html").read_text(encoding="utf-8")
+    assert "NEWER" not in (frontend_dir(hass) / "app.html").read_text(encoding="utf-8")
     assert Path(frontend_dir(hass) / "app.html").is_file()
     assert restored["version"]
     await hass.config_entries.async_unload(entry.entry_id)
