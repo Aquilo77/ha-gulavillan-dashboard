@@ -1,5 +1,5 @@
-/* Gulavillan theme: Isometrisk.
-   Colors, type, radii, shadows and spacing live here. */
+/* Gulavillan theme. Colors follow HOME_ASSISTANT_AI_SPEC.md section 6.
+   Layout tokens live here so the page does not hard-code them. */
 
 :root,
 [data-theme="dark"] {
@@ -8,36 +8,44 @@
   --weight: 400;
   --weight-strong: 500;
   --weight-light: 200;
-  --bg: #141c2c;
-  --bg-deep: #0c1018;
-  --bg-gradient: radial-gradient(ellipse at 50% 30%, #2a3850 0%, #141c2c 55%, #0c1018 100%);
-  --card: rgba(20, 28, 44, 0.85);
-  --text: #e8eef8;
-  --muted: rgba(255, 255, 255, 0.45);
-  --tab-idle: rgba(255, 255, 255, 0.4);
-  --accent: rgba(255, 200, 80, 0.2);
-  --accent-border: rgba(255, 200, 80, 0.35);
-  --accent-solid: #e8c040;
-  --accent-ink: #1c1408;
-  --line: rgba(255, 255, 255, 0.12);
-  --line-soft: rgba(255, 255, 255, 0.1);
+  --page: #0f1115;
+  --surface-1: #171a20;
+  --border: #262a33;
+  --text-primary: #f4f7fb;
+  --text-secondary: #c5ccd6;
+  --text-muted: #9aa3b2;
+  --accent: #4b8ff0;
+  --good: #3ddc84;
+  --warn: #f5b942;
+  --bad: #ff8b8b;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --radius: 14px;
+  --bg: var(--page);
+  --bg-deep: var(--page);
+  --bg-gradient: var(--page);
+  --card: var(--surface-1);
+  --text: var(--text-primary);
+  --muted: var(--text-muted);
+  --tab-idle: var(--text-secondary);
+  --accent-border: var(--accent);
+  --accent-solid: var(--accent);
+  --accent-ink: #0f1115;
+  --line: var(--border);
+  --line-soft: var(--border);
   --line-width: 1px;
-  --chip: rgba(255, 255, 255, 0.06);
-  --ok: #4ade80;
-  --warn: #fbbf24;
-  --info: #60a5fa;
-  --danger: #f07178;
-  --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-  --radius: 16px;
+  --chip: #1e232c;
+  --ok: var(--good);
+  --info: var(--accent);
+  --danger: var(--bad);
   --radius-sm: 10px;
   --radius-pill: 999px;
   --space-xs: 4px;
   --space-sm: 8px;
   --space: 16px;
-  --space-lg: 28px;
-  --space-xl: 36px;
+  --space-lg: 24px;
+  --space-xl: 32px;
   --tap: 48px;
-  --tab-h: 56px;
+  --tab-h: 40px;
   --title: 1.35rem;
   --value: 1.6rem;
   --clock: 48px;
@@ -46,14 +54,6 @@
   --chart-h: 96px;
   --house-w: 520px;
   --house-h: 420px;
-  --page: #141c2c;
-  --surface-1: rgba(20, 28, 44, 0.92);
-  --border: rgba(255, 255, 255, 0.12);
-  --text-primary: #e8eef8;
-  --text-secondary: rgba(255, 255, 255, 0.72);
-  --text-muted: rgba(255, 255, 255, 0.45);
-  --good: #4ade80;
-  --bad: #f07178;
 }
 
 [data-theme="light"] {
@@ -65,24 +65,14 @@
   --text-secondary: #3d4754;
   --text-muted: #5c6775;
   --accent: #1b63c4;
-  --accent-border: #1b63c4;
-  --accent-solid: #1b63c4;
-  --accent-ink: #ffffff;
-  --bg: var(--page);
-  --bg-deep: #eef1f6;
-  --bg-gradient: var(--page);
-  --card: var(--surface-1);
-  --text: var(--text-primary);
-  --muted: var(--text-muted);
-  --tab-idle: var(--text-secondary);
-  --line: var(--border);
-  --line-soft: var(--border);
-  --chip: #f1f3f7;
-  --ok: var(--good);
-  --warn: #b86e00;
-  --info: #1b63c4;
-  --danger: var(--bad);
-  --shadow: 0 8px 24px rgba(20, 28, 44, 0.08);
   --good: #1f7a3a;
+  --warn: #8a4b00;
   --bad: #a33b32;
+  --shadow: 0 8px 24px rgba(15, 17, 21, 0.06);
+  --accent-ink: #ffffff;
+  --chip: #f1f3f7;
+}
+
+@media (max-width: 820px) {
+  :root { --gap: 12px; }
 }
