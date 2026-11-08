@@ -23,6 +23,9 @@ from homeassistant.util import dt as dt_util
 
 _LOGGER = logging.getLogger(__name__)
 
+from .preferences import async_load_preferences
+from .rules import apply_preferences, score
+
 from .const import (
     MULTI_OPTIONS,
     OPT_CHARGERS,
@@ -66,6 +69,7 @@ PUBLIC_ATTRIBUTES = (
     "friendly_name",
     "unit_of_measurement",
     "device_class",
+    "state_class",
     "icon",
     "brightness",
     "supported_color_modes",
@@ -334,6 +338,7 @@ def build_catalog(hass: HomeAssistant, merged: dict[str, Any]) -> dict[str, Any]
 
     grouped: dict[tuple[str | None, str | None], list[dict[str, Any]]] = {}
     known: dict[str, dict[str, Any]] = {}
+    unclassified: list[dict[str, Any]] = []
     unavailable: list[dict[str, str]] = []
     unavailable_count = 0
     counts = {kind: 0 for kind in (
@@ -354,8 +359,21 @@ def build_catalog(hass: HomeAssistant, merged: dict[str, Any]) -> dict[str, Any]
                 unavailable.append({"entity_id": entry.entity_id, "name": _name(entry, state)})
         device = _device(entry, devices)
         kind = classify(entry, state, options, device)
+        domain = entry.entity_id.split(".", 1)[0]
         if kind is None:
+            if domain in {"sensor", "switch", "binary_sensor", "cover", "fan", "vacuum"}:
+                unclassified.append({
+                    "entity_id": entry.entity_id,
+                    "name": _name(entry, state),
+                    "domain": domain,
+                    "device_class": _device_class(entry, state),
+                    "confidence": "low",
+                    "reason": "Saknar känd domän eller enhetsklass",
+                    "suggested_category": "other",
+                })
             continue
+        forced = entry.entity_id in set(options.get(OPT_LIGHT_SWITCHES) or []) or entry.entity_id in set(options.get(OPT_CHARGERS) or [])
+        judged = score(kind, from_user=forced) or {}
         area_id = _area_id(entry, devices)
         area = area_entries.get(area_id) if area_id else None
         if area is None:
@@ -368,6 +386,9 @@ def build_catalog(hass: HomeAssistant, merged: dict[str, Any]) -> dict[str, Any]
             "name": _name(entry, state),
             "domain": entry.entity_id.split(".", 1)[0],
             "kind": kind,
+            "category": judged.get("category"),
+            "confidence": judged.get("confidence"),
+            "reason": judged.get("reason"),
             "device_class": _device_class(entry, state),
             "area_id": area_id,
             "state": state.state if state is not None else "unavailable",
@@ -506,12 +527,15 @@ def build_catalog(hass: HomeAssistant, merged: dict[str, Any]) -> dict[str, Any]
             "weather": weather,
             "lights": lights,
         },
+        "unclassified": unclassified,
     }
 
 
 async def async_build_catalog(hass: HomeAssistant, merged: dict[str, Any]) -> dict[str, Any]:
     """Build the catalog and attach the next two days of calendar events."""
     catalog = build_catalog(hass, merged)
+    apply_preferences(catalog, await async_load_preferences(hass))
+    catalog["synced_at"] = dt_util.utcnow().isoformat()
     await _attach_calendar(hass, catalog)
     return catalog
 
