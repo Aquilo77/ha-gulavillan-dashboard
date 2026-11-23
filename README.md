@@ -1,6 +1,6 @@
 # Gulavillan
 
-En sida i Home Assistants sidomeny. Hem är en isometrisk gul villa. Övriga flikar byggs av våningar, områden och enhetstyper i ditt Home Assistant. Inga entity_id, rum eller personnamn ligger i repot.
+En sida i Home Assistants sidomeny. Hem är en bild av den gula villan. Övriga flikar byggs av våningar, områden och enhetstyper i ditt Home Assistant. Inga entity_id, rum eller personnamn ligger i repot.
 
 Du loggar in med ditt vanliga Home Assistant-konto. En egen port och en pinkod för hela sidan behövs inte längre.
 
@@ -56,7 +56,7 @@ En flik visas bara om det finns något att visa.
 
 | Flik | Innehåll |
 | --- | --- |
-| Startsida | Isometrisk gul villa plus översiktskorten. Klocka, ute med graf, inne, luftfuktighet och elpris svävar runt huset. Fönstren tänds av lamporna och går att klicka. Dörren följer dörrsensorn. Status och närvaro ligger längs nederkanten. |
+| Startsida | Bild av villan plus översiktskorten. Klocka, ute med graf, inne, luftfuktighet och elpris svävar runt huset. Fönstren tänds av lamporna och går att klicka. Dörren följer dörrsensorn. Status och närvaro ligger längs nederkanten. |
 | Belysning | Lampor per våning och område, med tänd/släck, ljusstyrka och släck allt. Strömbrytare kommer med bara om du valt dem. |
 | Klimat | Klimat, temperatur, luftfuktighet och ljus per område, plus ute och väder. |
 | Närvaro | Personer, enhetsspårare, rörelse och när den senast ändrades. |
